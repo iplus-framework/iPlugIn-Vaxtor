@@ -593,7 +593,7 @@ namespace soehnle.mes.processapplication
             }
             catch(Exception e)
             {
-                Msg msg = new Msg(e.Message, this, eMsgLevel.Exception, ClassName, "OnRegisterAlibiWeigh", 579);
+                Msg msg = new Msg("Terminal 30xx Alibi Error: " + e.Message, this, eMsgLevel.Exception, ClassName, "OnRegisterAlibiWeigh", 596);
                 Messages.LogMessageMsg(msg);
                 return msg;
             }
