@@ -447,7 +447,8 @@ namespace stech.mes.processapplication
                 if (sender == DensityValue)
                 {
                     // Refresh Sensor-Value only if Measuring active and no errors
-                    if (BDS2Status != null && BDS2Status.ValueT.Bit01_NoErrors && BDS2Status.ValueT.Bit03_SamplingActive)
+                    if (BDS2Status != null && BDS2Status.ValueT.Bit01_NoErrors)
+                    // && BDS2Status.ValueT.Bit03_SamplingActive) // Change 19.02.2021. Mr. Kuester
                     {
                         (ActualValue as IACPropertyNetTarget).ChangeValueServer((double)DensityValue.ValueT, false, e.ValueEvent.InvokerInfo);
                     }
