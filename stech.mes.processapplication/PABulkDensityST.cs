@@ -3,6 +3,7 @@ using gip.core.datamodel;
 using gip.core.autocomponent;
 using gip.core.processapplication;
 using System.Runtime.Serialization;
+using System.Xml;
 
 namespace stech.mes.processapplication
 {
@@ -193,7 +194,7 @@ namespace stech.mes.processapplication
     public class PABulkDensityBDS2ST : PAESensorAnalog
     {
         #region c'tors
-        public PABulkDensityBDS2ST(gip.core.datamodel.ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier="")
+        public PABulkDensityBDS2ST(gip.core.datamodel.ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "")
             : base(acType, content, parentACObject, parameter, acIdentifier)
         {
         }
@@ -210,6 +211,8 @@ namespace stech.mes.processapplication
             return true;
         }
 
+
+
         public override bool ACDeInit(bool deleteACClassTask = false)
         {
             (DensityValue as IACPropertyNetServer).ValueUpdatedOnReceival -= PABulkDensityBDS2ST_ValueUpdatedOnReceival;
@@ -217,12 +220,16 @@ namespace stech.mes.processapplication
             (BDS2Status as IACPropertyNetServer).ValueUpdatedOnReceival -= PABulkDensityBDS2ST_ValueUpdatedOnReceival;
             (SampleID as IACPropertyNetServer).ValueUpdatedOnReceival -= PABulkDensityBDS2ST_ValueUpdatedOnReceival;
             (DensityCorrFact as IACPropertyNetServer).ValueUpdatedOnReceival -= PABulkDensityBDS2ST_ValueUpdatedOnReceival;
+            if (ApplicationManager != null)
+                ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
             return base.ACDeInit(deleteACClassTask);
         }
+
 
         public override bool ACPostInit()
         {
             bool result = base.ACPostInit();
+            ExternalDumpCycle.ValueT = MaxExternalDumpCycles + 1;
             BindMyProperties();
             return result;
         }
@@ -294,6 +301,28 @@ namespace stech.mes.processapplication
             get;
             set;
         }
+
+        [ACPropertyInfo(true, 691, "Config", "en{'Maximum cycles of external dump'}de{'Maximum cycles of external dump'}", DefaultValue = 1)]
+        public int MaxExternalDumpCycles
+        {
+            get;
+            set;
+        }
+
+        [ACPropertyInfo(true, 692, "Config", "en{'Abort on error after n cycles'}de{'Abort on error after n cycles'}", DefaultValue = 1)]
+        public int AbortOnErrorAfterNCycles
+        {
+            get;
+            set;
+        }
+
+        [ACPropertyInfo(true, 693, "Config", "en{'Wait for SamplingActive is switched off in seconds'}de{'Wait for SamplingActive is switched off in seconds'}", DefaultValue = 5)]
+        public int WaitForSwitchOffSamplingActive
+        {
+            get;
+            set;
+        }
+
         #endregion
 
         #region Read from Device
@@ -402,6 +431,30 @@ namespace stech.mes.processapplication
         [ACPropertyBindingSource(621, "ACConfig", "en{'Start time'}de{'Startzeit'}", "", false, true)]
         public IACContainerTNet<DateTime> LastDump { get; set; }
 
+        [ACPropertyBindingSource(622, "ACConfig", "en{'External dump cycle'}de{'External dump cycle'}", "", false, true)]
+        public IACContainerTNet<int> ExternalDumpCycle
+        {
+            get;
+            set;
+        }
+
+        #endregion
+
+        #region Alarms
+
+        [ACPropertyBindingSource(670, "Error", "en{'External dump error'}de{'External dump error'}", "", false, false)]
+        public IACContainerTNet<PANotifyState> ExternalDumpError { get; set; }
+
+        #endregion
+
+        #region Private members
+
+        private bool _IsStatusBit03Off = false;
+        private bool _SamplingActive = false;
+        private DateTime? _SampleIDChanged = null;
+        private int _ErrorExternalDumpCounter = 0;
+        private int _SuccessExternalDumpCounter = 0;
+
         #endregion
 
         #endregion
@@ -440,6 +493,7 @@ namespace stech.mes.processapplication
 
 
         #region Events-Handler
+
         private void PABulkDensityBDS2ST_ValueUpdatedOnReceival(object sender, ACPropertyChangedEventArgs e, ACPropertyChangedPhase phase)
         {
             if (phase == ACPropertyChangedPhase.AfterBroadcast)
@@ -483,8 +537,8 @@ namespace stech.mes.processapplication
                             });
                         }
                     }
-                    if (BDS2Status.ValueT.Bit01_NoErrors 
-                        && BDS2Status.ValueT.Bit02_Ready 
+                    if (BDS2Status.ValueT.Bit01_NoErrors
+                        && BDS2Status.ValueT.Bit02_Ready
                         && BDS2Cmd.ValueT.Bit07_StartUpBDS)
                     {
                         if (this.ApplicationManager != null)
@@ -495,6 +549,59 @@ namespace stech.mes.processapplication
                             });
                         }
                     }
+
+                    //Reset command bit External dump
+                    if (BDS2Status.ValueT.Bit06_ExternalDump && BDS2Cmd.ValueT.Bit01_ExternalDump)
+                    {
+                        BDS2Cmd.ValueT.Bit01_ExternalDump = false;
+                        LastDump.ValueT = DateTime.Now;
+                    }
+
+                    if (BDS2Status.ValueT.Bit03_SamplingActive)
+                    {
+                        using (ACMonitor.Lock(_20015_LockValue))
+                        {
+                            _SamplingActive = true;
+                            _IsStatusBit03Off = false;
+                        }
+                    }
+
+                    if (_SamplingActive && !BDS2Status.ValueT.Bit03_SamplingActive)
+                    {
+                        bool runNextCycle = false;
+                        using (ACMonitor.Lock(_20015_LockValue))
+                            runNextCycle = ExternalDumpCycle.ValueT < MaxExternalDumpCycles;
+
+                        if (runNextCycle)
+                        {
+                            if (this.ApplicationManager != null)
+                            {
+                                this.ApplicationManager.ApplicationQueue.Add(() =>
+                                {
+                                    BDS2Cmd.ValueT.Bit01_ExternalDump = true;
+                                });
+                            }
+                            using (ACMonitor.Lock(_20015_LockValue))
+                            {
+                                _IsStatusBit03Off = true;
+                                _SampleIDChanged = null;
+                                ExternalDumpCycle.ValueT = ExternalDumpCycle.ValueT + 1;
+                                _SuccessExternalDumpCounter++;
+                                _SamplingActive = false;
+                            }
+                        }
+                        else
+                        {
+                            using (ACMonitor.Lock(_20015_LockValue))
+                            {
+                                if (ExternalDumpCycle.ValueT != MaxExternalDumpCycles + 1)
+                                    ExternalDumpCycle.ValueT = MaxExternalDumpCycles + 1;
+                                _IsStatusBit03Off = true;
+                                _SampleIDChanged = null;
+                                _SamplingActive = false;
+                            }
+                        }
+                    }
                 }
                 else if (sender == SampleID)
                 {
@@ -503,18 +610,33 @@ namespace stech.mes.processapplication
                         BDS2Cmd.ValueT.Bit02_NewBatch = false;
                     if (LastSampleID.ValueT != SampleID.ValueT)
                     {
-                        if (BDS2Cmd.ValueT.Bit01_ExternalDump)
+                        //if (BDS2Cmd.ValueT.Bit01_ExternalDump)
+                        //{
+                        //    BDS2Cmd.ValueT.Bit01_ExternalDump = false;
+                        //    LastDump.ValueT = DateTime.Now;
+                        //}
+                        if (BDS2Status.ValueT.Bit03_SamplingActive)
                         {
-                            BDS2Cmd.ValueT.Bit01_ExternalDump = false;
-                            LastDump.ValueT = DateTime.Now;
+                            using (ACMonitor.Lock(_20015_LockValue))
+                            {
+                                _SampleIDChanged = DateTime.Now;
+                            }
                         }
+                        else
+                        {
+                            using (ACMonitor.Lock(_20015_LockValue))
+                            {
+                                _SampleIDChanged = null;
+                            }
+                        }
+
                         LastSampleID.ValueT = SampleID.ValueT;
                     }
                 }
                 else if (sender == DensityCorrFact)
                 {
                     // After Restarting a BDS-Unit the DensityCorrection-Factor is zero => Reset it to 1;
-                    if (DensityCorrFact.ValueT < 0.001 
+                    if (DensityCorrFact.ValueT < 0.001
                         && e.ValueEvent.EventType == EventTypes.ValueChangedInSource
                         && this.ApplicationManager != null)
                     {
@@ -523,6 +645,67 @@ namespace stech.mes.processapplication
                 }
             }
         }
+
+        private void ApplicationManager_ProjectWorkCycleR1sec(object sender, EventArgs e)
+        {
+            bool checkForError = false;
+            DateTime? sampleDT = null;
+            int dumpCycle = ExternalDumpCycle.ValueT;
+
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                sampleDT = _SampleIDChanged;
+                checkForError = sampleDT.HasValue && !_IsStatusBit03Off && ExternalDumpCycle.ValueT > 0;
+            }
+
+            if (checkForError)
+            {
+                var time = DateTime.Now - sampleDT.Value;
+                if (time.TotalSeconds > WaitForSwitchOffSamplingActive)
+                {
+                    using (ACMonitor.Lock(_20015_LockValue))
+                    {
+                        if (ExternalDumpCycle.ValueT > AbortOnErrorAfterNCycles && BDS2Status.ValueT.Bit03_SamplingActive)
+                        {
+                            ExternalDumpCycle.ValueT = MaxExternalDumpCycles;
+
+                            Msg msg = new Msg("External dump error!", this, eMsgLevel.Error, "PABulkDensityST", "ProjectWorkCycleR1sec(10)", 636);
+                            if (IsAlarmActive(ExternalDumpError, msg.Message) == null)
+                                OnNewAlarmOccurred(ExternalDumpError, msg);
+
+                            if (ApplicationManager != null)
+                                ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
+                        }
+                        else
+                        {
+                            _ErrorExternalDumpCounter++;
+                            if (_ErrorExternalDumpCounter > 2 && BDS2Status.ValueT.Bit03_SamplingActive)
+                            {
+                                ExternalDumpCycle.ValueT = MaxExternalDumpCycles;
+
+                                Msg msg = new Msg("External dump error!", this, eMsgLevel.Error, "PABulkDensityST", "ProjectWorkCycleR1sec(20)", 651);
+                                if (IsAlarmActive(ExternalDumpError, msg.Message) == null)
+                                    OnNewAlarmOccurred(ExternalDumpError, msg);
+
+                                if (ApplicationManager != null)
+                                    ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
+                            }
+                            else
+                            {
+                                ExternalDumpCycle.ValueT = _SuccessExternalDumpCounter > 0 ? MaxExternalDumpCycles - _SuccessExternalDumpCounter : 0;
+                                _SampleIDChanged = null;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (dumpCycle > MaxExternalDumpCycles)
+            {
+                if (ApplicationManager != null)
+                    ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
+            }
+        }
+
         #endregion
 
         #region Client-Methods
@@ -531,7 +714,23 @@ namespace stech.mes.processapplication
         {
             if (!IsEnabledDoExternalDump())
                 return;
-            BDS2Cmd.ValueT.Bit01_ExternalDump = true;
+
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                BDS2Cmd.ValueT.Bit01_ExternalDump = true;
+                ExternalDumpCycle.ValueT = 1;
+                _SuccessExternalDumpCounter = 0;
+                _ErrorExternalDumpCounter = 0;
+                _IsStatusBit03Off = false;
+                _SampleIDChanged = null;
+                _SamplingActive = false;
+            }
+
+            if (ApplicationManager != null)
+            {
+                ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
+                ApplicationManager.ProjectWorkCycleR1sec += ApplicationManager_ProjectWorkCycleR1sec;
+            }
         }
 
         public virtual bool IsEnabledDoExternalDump()
@@ -553,6 +752,56 @@ namespace stech.mes.processapplication
         }
 
         #endregion
+
+        protected override void DumpPropertyList(XmlDocument doc, XmlElement xmlACPropertyList)
+        {
+            base.DumpPropertyList(doc, xmlACPropertyList);
+
+            XmlElement xmlChild = xmlACPropertyList["IsStatusBit03Off"];
+            if (xmlChild == null)
+            {
+                xmlChild = doc.CreateElement("IsStatusBit03Off");
+                if (xmlChild != null)
+                    xmlChild.InnerText = _IsStatusBit03Off.ToString();
+                xmlACPropertyList.AppendChild(xmlChild);
+            }
+
+            xmlChild = xmlACPropertyList["SamplingActive"];
+            if (xmlChild == null)
+            {
+                xmlChild = doc.CreateElement("SamplingActive");
+                if (xmlChild != null)
+                    xmlChild.InnerText = _SamplingActive.ToString();
+                xmlACPropertyList.AppendChild(xmlChild);
+            }
+
+            xmlChild = xmlACPropertyList["SampleIDChanged"];
+            if (xmlChild == null)
+            {
+                xmlChild = doc.CreateElement("SampleIDChanged");
+                if (xmlChild != null)
+                    xmlChild.InnerText = _SampleIDChanged?.ToString();
+                xmlACPropertyList.AppendChild(xmlChild);
+            }
+
+            xmlChild = xmlACPropertyList["ErrorExternalDumpCounter"];
+            if (xmlChild == null)
+            {
+                xmlChild = doc.CreateElement("ErrorExternalDumpCounter");
+                if (xmlChild != null)
+                    xmlChild.InnerText = _ErrorExternalDumpCounter.ToString();
+                xmlACPropertyList.AppendChild(xmlChild);
+            }
+
+            xmlChild = xmlACPropertyList["SuccessExternalDumpCounter"];
+            if (xmlChild == null)
+            {
+                xmlChild = doc.CreateElement("SuccessExternalDumpCounter");
+                if (xmlChild != null)
+                    xmlChild.InnerText = _SuccessExternalDumpCounter.ToString();
+                xmlACPropertyList.AppendChild(xmlChild);
+            }
+        }
 
         #endregion
     }
