@@ -550,8 +550,13 @@ namespace stech.mes.processapplication
                         }
                     }
 
+                    bool isFirstCycle = false;
+                    using (ACMonitor.Lock(_20015_LockValue))
+                        isFirstCycle = ExternalDumpCycle.ValueT == 1;
+
                     //Reset command bit External dump
-                    if (BDS2Status.ValueT.Bit06_ExternalDump && BDS2Cmd.ValueT.Bit01_ExternalDump)
+                    if (BDS2Status.ValueT.Bit06_ExternalDump && BDS2Cmd.ValueT.Bit01_ExternalDump
+                        && (BDS2Status.ValueT.Bit03_SamplingActive || isFirstCycle))
                     {
                         BDS2Cmd.ValueT.Bit01_ExternalDump = false;
                         LastDump.ValueT = DateTime.Now;
@@ -723,7 +728,7 @@ namespace stech.mes.processapplication
                 _ErrorExternalDumpCounter = 0;
                 _IsStatusBit03Off = false;
                 _SampleIDChanged = null;
-                _SamplingActive = false;
+                _SamplingActive = BDS2Status.ValueT.Bit03_SamplingActive;
             }
 
             if (ApplicationManager != null)
