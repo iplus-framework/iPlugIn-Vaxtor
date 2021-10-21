@@ -226,7 +226,7 @@ namespace gip.mes.processapplication
 #if DEBUG
                 module.TaskInvocationPoint.ClearMyInvocations(this);
 #endif
-                if (!module.TaskInvocationPoint.AddTask(paramMethod, this))
+                if (!IsTaskStarted(module.TaskInvocationPoint.AddTask(paramMethod, this)))
                 {
                     Msg msg = new Msg
                     {

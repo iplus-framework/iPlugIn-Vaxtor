@@ -306,7 +306,7 @@ namespace kse.mes.processapplication
 #if DEBUG
             module.TaskInvocationPoint.ClearMyInvocations(this);
 #endif
-            if (!module.TaskInvocationPoint.AddTask(acMethod, this))
+            if (!IsTaskStarted(module.TaskInvocationPoint.AddTask(acMethod, this)))
             {
                 // Error50074: Dischargingtask not startable Order {0}, Bill of material {1}, line {2}
                 msg = new Msg(this, eMsgLevel.Error, PWClassName, "StartPositioning(3)", 233, "Error50074", "ProgramNo", "PartslistNo", "MaterialName1");

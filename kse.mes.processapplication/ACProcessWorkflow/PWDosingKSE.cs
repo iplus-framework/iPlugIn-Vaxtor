@@ -353,7 +353,7 @@ namespace kse.mes.processapplication
 
                         module.TaskInvocationPoint.ClearMyInvocations(this);
                         _CurrentMethodEventArgs = null;
-                        if (!module.TaskInvocationPoint.AddTask(acMethod, this))
+                        if (!IsTaskStarted(module.TaskInvocationPoint.AddTask(acMethod, this)))
                         {
                             ACMethodEventArgs eM = _CurrentMethodEventArgs;
                             if (eM == null || eM.ResultState != Global.ACMethodResultState.FailedAndRepeat)
