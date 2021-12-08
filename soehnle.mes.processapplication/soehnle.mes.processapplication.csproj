@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IPlusIncludeDir>..\..\iPlus\bin\Debug</IPlusIncludeDir>
+    <IPlusIncludeDir>..\..\..\trunk\iPlusMES\bin\Debug</IPlusIncludeDir>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <IPlusIncludeDir>..\..\iPlus\bin\Release</IPlusIncludeDir>
+    <IPlusIncludeDir>..\..\..\trunk\iPlusMES\bin\Release</IPlusIncludeDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="gip.core.autocomponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL">
@@ -45,6 +45,10 @@
     <Reference Include="gip.core.processapplication">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
+    </Reference>
+    <Reference Include="gip.mes.processapplication">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(IPlusIncludeDir)\gip.mes.processapplication.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -60,13 +64,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\iPlusMES\gip.mes.processapplication\gip.mes.processapplication.csproj">
-      <Project>{d1320fb8-333d-4072-880d-bd5137933d2f}</Project>
-      <Name>gip.mes.processapplication</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="VBControlScripts\" />
   </ItemGroup>
+  <Import Project="..\soehnle.mes.processapplication.shared\soehnle.mes.processapplication.shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

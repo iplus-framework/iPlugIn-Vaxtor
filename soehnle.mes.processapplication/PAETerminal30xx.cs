@@ -17,6 +17,11 @@ namespace soehnle.mes.processapplication
     public class PAETerminal30xx : PAEScaleCalibratable
     {
         #region c'tors
+        static PAETerminal30xx()
+        {
+            RegisterExecuteHandler(typeof(PAETerminal30xx), HandleExecuteACMethod_PAETerminal30xx);
+        }
+
 
         public PAETerminal30xx(ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "") : 
                base(acType, content, parentACObject, parameter, acIdentifier)
@@ -62,21 +67,9 @@ namespace soehnle.mes.processapplication
         public new const string ClassName = "PAETerminal30xx";
         #endregion
 
+
         #region Const
-
-        public const string SendValX1ACK = "<a>";
-        public const string SendValX1 = "<A>";
-
-        public const string SendValContinuouslyACK = "<f>";
-        public const string SendValContinuously = "<F>";
-
-        public const string SwitchOffTerminal = "<K002K>";
-
-        public const string AlibiCommand = "<h>";
-
-        public const string EmptyWeightUnderload = "______";
-
-        public const int ScaleMessageLenght = 19;
+        //public const string SwitchOffTerminal = "<K002K>";
 
         #endregion
 
@@ -346,11 +339,8 @@ namespace soehnle.mes.processapplication
                     NetworkStream stream = this.TcpClient.GetStream();
                     if (stream == null || !stream.CanWrite)
                         return;
-                    string message = "";
                     //<F> Send value continuously
-                    message = "<F>";
-                    Byte[] data = Encoding.ASCII.GetBytes(message);
-                    stream.Write(data, 0, data.Length);
+                    stream.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
                     _LastWrite = DateTime.Now;
 
                     CurrentScaleMode = PAScaleMode.ReadingWeights;
@@ -391,9 +381,7 @@ namespace soehnle.mes.processapplication
                         Thread.Sleep(1000);
 
                     // <A> Send value x1 immediately
-                    string message = "<A>";
-                    Byte[] data = Encoding.ASCII.GetBytes(message);
-                    stream.Write(data, 0, data.Length);
+                    stream.Write(Cmd3xxx.GetValueOneTime, 0, Cmd3xxx.C_CmdLength);
                     _LastWrite = DateTime.Now;
 
                     CurrentScaleMode = PAScaleMode.Idle;
@@ -417,25 +405,6 @@ namespace soehnle.mes.processapplication
             return CurrentScaleMode == PAScaleMode.ReadingWeights;
         }
 
-
-        //EDP Standard
-        //
-        // | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8| 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | .... | 42 |
-
-        // | 0 | 0 | 0 | 1 | 0 | 1 | N |  |   |    |    | -  | 1  | 0  | 0  | .  | 0  |    | kg |    |
-
-        //Status  | Scale | Net value with known value, prefix and dimension |
-        //--------+-------+---------------------------------------------------
-        //Status  | Scale |  K  |  Space  |  V  |  Weight value  | Dimension |
-
-        // Status: 0 - inactive, 1 - active
-        // 1. place: Underload
-        // 2. place: Overload
-        // 3. place: Scale at standstill
-        // 4. place: Empty message
-
-        //K = known value
-        //V = prefix, always in front of weight value
 
         protected void ReadWeightData()
         {
@@ -483,31 +452,17 @@ namespace soehnle.mes.processapplication
 
         protected virtual void OnReadWeightDataDone(String readResult)
         {
-            if (readResult.Count() < ScaleMessageLenght || string.IsNullOrEmpty(readResult) || readResult.StartsWith(" "))
-                return;
-
-            if (!IsStatusOk(readResult))
-                return;
-
-            int prefixPos = 11;
-            int weightPos = prefixPos + 1;
-
-            string prefix = readResult.Substring(prefixPos, 1);
-            if(prefix == " ")
+            Tele3xxxEDV tele3XxxEDV = new Tele3xxxEDV(readResult);
+            if (tele3XxxEDV.InvalidWeight)
             {
-                string weight = readResult.Substring(weightPos, 6); //TODO: test lenght
-                double resultWeight = 0;
-
-                if(!double.TryParse(weight, out resultWeight) && weight != EmptyWeightUnderload)
-                {
-                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnReadWeightDataDone(10)", 504, "Error50306");
-                    OnNewAlarmOccurred(StateScale, msg, true);
-                    if (IsAlarmActive(StateScale, msg.Message) == null)
-                        Messages.LogMessageMsg(msg);
-                    Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnReadWeightDataDone(10a)", "String to parse:" + weight);
-                }
-                ActualValue.ValueT = resultWeight;
+                Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnReadWeightDataDone(10)", 504, "Error50306");
+                OnNewAlarmOccurred(StateScale, msg, true);
+                if (IsAlarmActive(StateScale, msg.Message) == null)
+                    Messages.LogMessageMsg(msg);
+                Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnReadWeightDataDone(10a)", "String to parse:" + readResult);
             }
+            else
+                ActualValue.ValueT = tele3XxxEDV.WeightKg;
         }
 
         private bool IsStatusOk(string readResult)
@@ -564,7 +519,8 @@ namespace soehnle.mes.processapplication
             {
                 if (!ApplicationManager.IsSimulationOn)
                 {
-                    string reply = SendCommand(AlibiCommand);
+                    string reply = SendCommand(Cmd3xxx.C_GetValueOneTimeStill);  // Model 3010 Needs a <H> Cmd instead of <B>
+                    //string reply = SendCommand(Cmd3xxx.C_GetValueOneTimeStillWithAlibi);  // Model 3010 Needs a <H> Cmd instead of <B>
                     string alibiResult = null;
                     double alibiWeight = ActualWeight.ValueT;
 
@@ -599,13 +555,6 @@ namespace soehnle.mes.processapplication
             }
         }
 
-        //EDP Standard
-        //
-        // | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | .... | 42 |
-
-        // | A | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |  0 |  0 |  1 |  0 |  1 |  N |    |    |    |    |  - |  1 |  0 |  0 |  0 |  . |  0 |    |  k |  g |    |
-        //                 Alibi           |      Status      |  Scale  |  Net value with marking, presign and dimension
-
         public Msg OnParseAlibiResult(string replyFromScale, out string alibiNo, out double alibiWeight)
         {
             alibiNo = null;
@@ -614,17 +563,16 @@ namespace soehnle.mes.processapplication
             if (string.IsNullOrEmpty(replyFromScale))
                 return new Msg(eMsgLevel.Error, "The reply from scale is null or empty!");
 
-            int startIndex = replyFromScale.IndexOf("A");
-            if (startIndex < 0)
-                return new Msg(eMsgLevel.Error, "The reply from scale is not correct! Can't find the AlibiNo start!");
-
-            replyFromScale = replyFromScale.Substring(startIndex);
-
-            alibiNo = replyFromScale.Substring(0, 8);
-
-            string weight = replyFromScale.Substring(20, 6);
-            if(!double.TryParse(weight, out alibiWeight))
-                return new Msg(eMsgLevel.Error, "Can not parse the Alibi weight from scale reply");
+            try
+            {
+                Tele3xxxAlibi tele3XxxEDV = new Tele3xxxAlibi(replyFromScale);
+                alibiNo = tele3XxxEDV.AlibiNumber;
+                alibiWeight = tele3XxxEDV.WeightKg;
+            }
+            catch (Exception ex)
+            {
+                return new Msg(eMsgLevel.Exception, ex.Message);
+            }
 
             return null;
         }
@@ -697,8 +645,7 @@ namespace soehnle.mes.processapplication
                     if (stream == null || !stream.CanWrite)
                         throw new Exception("Can't write to Stream");
 
-                    byte[] data = Encoding.ASCII.GetBytes("<f>");
-                    stream.Write(data, 0, data.Length);
+                    stream.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
                     _LastWrite = DateTime.Now;
 
                     Thread.Sleep(50);
@@ -738,6 +685,11 @@ namespace soehnle.mes.processapplication
         }
 
         #region Helper-Methods
+        public static bool HandleExecuteACMethod_PAETerminal30xx(out object result, IACComponent acComponent, string acMethodName, ACClassMethod acClassMethod, object[] acParameter)
+        {
+            return HandleExecuteACMethod_PAEScaleCalibratable(out result, acComponent, acMethodName, acClassMethod, acParameter);
+        }
+
         protected override bool HandleExecuteACMethod(out object result, AsyncMethodInvocationMode invocationMode, string acMethodName, gip.core.datamodel.ACClassMethod acClassMethod, params object[] acParameter)
         {
             result = null;
