@@ -271,6 +271,7 @@ namespace soehnle.mes.processapplication
                 {
                     if (this.TcpClient.Connected)
                         this.TcpClient.Close();
+                    _tcpClient.Dispose();
                     _tcpClient = null;
                 }
             }
@@ -519,7 +520,7 @@ namespace soehnle.mes.processapplication
             {
                 if (!ApplicationManager.IsSimulationOn)
                 {
-                    string reply = SendCommand(Cmd3xxx.C_GetValueOneTimeStill);  // Model 3010 Needs a <H> Cmd instead of <B>
+                    string reply = SendCmdReadResponse(Cmd3xxx.C_GetValueOneTimeStill);  // Model 3010 Needs a <H> Cmd instead of <B>
                     //string reply = SendCommand(Cmd3xxx.C_GetValueOneTimeStillWithAlibi);  // Model 3010 Needs a <H> Cmd instead of <B>
                     string alibiResult = null;
                     double alibiWeight = ActualWeight.ValueT;
@@ -577,7 +578,7 @@ namespace soehnle.mes.processapplication
             return null;
         }
 
-        public string SendCommand(string command)
+        public string SendCmdReadResponse(string command)
         {
             if (string.IsNullOrEmpty(command))
                 return null;
@@ -721,26 +722,6 @@ namespace soehnle.mes.processapplication
                     return true;
             }
             return base.HandleExecuteACMethod(out result, invocationMode, acMethodName, acClassMethod, acParameter);
-        }
-
-        public static string NumberFormat(int length, short value)
-        {
-            string strVal = value.ToString();
-            if (String.IsNullOrEmpty(strVal))
-            {
-                strVal = "                                                               ";
-                strVal.Substring(0, length);
-            }
-            else if (strVal.Length < length)
-            {
-                strVal = strVal + "                                                               ";
-                return strVal.Substring(0, length);
-            }
-            else if (strVal.Length > length)
-            {
-                return strVal.Substring(0, length);
-            }
-            return strVal;
         }
         #endregion
 

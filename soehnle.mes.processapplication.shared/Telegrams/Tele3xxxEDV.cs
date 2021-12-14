@@ -188,7 +188,8 @@ namespace soehnle.mes.processapplication
                 }
                 sb.Append("    ");
                 sb.Append(_WeightValue < 0 ? '-' : '+');
-                sb.AppendFormat("{0:####.#}", _WeightValue);
+                string s = String.Format("{0:    0.0}", Math.Abs(_WeightValue));
+                sb.Append(s.Substring(s.Length - 6, 6));
                 tmp = " " + Dimension + "    ";
                 sb.Append(tmp.Substring(4));
                 return sb.ToString();
