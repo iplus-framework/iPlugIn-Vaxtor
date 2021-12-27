@@ -61,6 +61,7 @@ namespace soehnle.mes.processapplication
                     break;
             }
             string sWeight = tele.Substring(StartOffset + 12, 6);
+            sWeight = sWeight.Trim();
             if (!string.IsNullOrWhiteSpace(sWeight)
                 && sWeight != C_EmptyWeightUnderload1
                 && sWeight != C_EmptyWeightUnderload2

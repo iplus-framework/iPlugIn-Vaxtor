@@ -9,6 +9,8 @@
     <Import_RootNamespace>soehnle.mes.processapplication.shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Scales\Comm3010.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scales\Comm3xxxBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Telegrams\Cmd3xxx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Telegrams\ScaleValueTypeEnum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Telegrams\Tele3xxxAlibi.cs" />
