@@ -60,6 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PAETerminal3010.cs" />
+    <Compile Include="PAETerminal3720.cs" />
+    <Compile Include="PAETerminal3xxxBase.cs" />
     <Compile Include="PAETerminal30xx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
