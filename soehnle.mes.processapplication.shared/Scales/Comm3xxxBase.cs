@@ -37,17 +37,20 @@ namespace soehnle.mes.processapplication
         }
 
 
-        public bool ReadWeightData(SerialPort channel, out string result)
+        public bool ReadWeightData(SerialPort channel, int teleLength, out string result)
         {
             result = null;
             if (channel == null)
                 return false;
-            if (channel.IsOpen && channel.BytesToRead > 0)
+            if (channel.IsOpen)
             {
-
                 byte[] myReadBuffer = new byte[1024];
                 int numberOfBytesRead = 0;
-                numberOfBytesRead = channel.Read(myReadBuffer, 0, myReadBuffer.Length);
+                if (teleLength <= 0)
+                    teleLength = Tele3xxxAlibi.C_TelegramLengthAlibi;
+                int readSize = (1024 / teleLength) * teleLength;
+                numberOfBytesRead = channel.Read(myReadBuffer, 0, readSize);
+                //channel.DiscardInBuffer();
                 result = string.Format("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
                 return result != null;
             }
@@ -115,12 +118,6 @@ namespace soehnle.mes.processapplication
                 return false;
             channel.Write(Cmd3xxx.GetValueOneTimeStillWithAlibi, 0, Cmd3xxx.C_CmdLength);
             return true;
-        }
-
-
-        public Tele3xxxEDV ConvertToEDV(string result)
-        {
-            return new Tele3xxxEDV(result);
         }
 
         #endregion

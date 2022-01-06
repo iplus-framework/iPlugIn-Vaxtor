@@ -31,13 +31,7 @@ namespace soehnle.mes.processapplication
 
         public override bool ACPostInit()
         {
-            OpenPort();
-            //if (CurrentScaleMode == PAScaleMode.ReadingWeights)
-            //{
-            CurrentScaleMode = PAScaleMode.Idle;
-            StartReadWeightData();
-            //}
-
+            CurrentScaleMode = PAScaleMode.Init;
             if (PollingInterval <= 0)
                 PollingInterval = 2000;
             if (ACOperationMode == ACOperationModes.Live)
@@ -79,9 +73,11 @@ namespace soehnle.mes.processapplication
         #region Enums
         public enum PAScaleMode : short
         {
-            Idle = 0,
-            ReadingWeightsRequested = 1,
-            ReadingWeights = 2,
+            Disconnect = 0,
+            Init = 1,
+            Idle = 2,
+            ReadingWeightsRequested = 3,
+            ReadingWeights = 4,
         }
         #endregion
 
@@ -194,13 +190,13 @@ namespace soehnle.mes.processapplication
         /// <summary>
         /// ReadTimeout
         /// </summary>
-        [ACPropertyInfo(true, 405)]
+        [ACPropertyInfo(true, 405, "Config", "en{'Read-Timeout [ms]'}de{'Lese-Timeout [ms]'}", DefaultValue = 2000)]
         public int ReadTimeout { get; set; }
 
         /// <summary>
         /// WriteTimeout
         /// </summary>
-        [ACPropertyInfo(true, 406)]
+        [ACPropertyInfo(true, 406, "Config", "en{'Write-Timeout [ms]'}de{'Schreibe-Timeout [ms]'}", DefaultValue = 2000)]
         public int WriteTimeout { get; set; }
 
         #endregion
@@ -247,6 +243,7 @@ namespace soehnle.mes.processapplication
         protected abstract Comm3xxxBase Communicator { get; }
 
         private int _CountEmptyReads = 0;
+        private int _CountInvalidWeights = 0;
         private DateTime _LastWrite = DateTime.Now;
         protected DateTime LastWrite
         {
@@ -280,15 +277,31 @@ namespace soehnle.mes.processapplication
         {
             try
             {
-                while (!_ShutdownEvent.WaitOne(PollingInterval, false))
+                int pollInterval = PollingInterval;
+                while (!_ShutdownEvent.WaitOne(pollInterval, false))
                 {
+                    pollInterval = PollingInterval;
                     _PollThread.StartReportingExeTime();
+
+                    if (CurrentScaleMode == PAScaleMode.Init)
+                    {
+                        OpenPort();
+                        if (IsConnected.ValueT)
+                            SendStartReadingWeights();
+                    }
+
                     if (CurrentScaleMode == PAScaleMode.ReadingWeightsRequested
                         || CurrentScaleMode == PAScaleMode.ReadingWeights)
                     {
                         OpenPort();
-                        PollWeightData();
+                        if (IsConnected.ValueT)
+                        {
+                            PollWeightData();
+                            if (_CountInvalidWeights > 0)
+                                pollInterval = PollingInterval + (100 * _CountInvalidWeights); // Scale was to slow send data, enlarge polling time
+                        }
                     }
+
                     _PollThread.StopReportingExeTime();
                 }
             }
@@ -301,19 +314,24 @@ namespace soehnle.mes.processapplication
         protected void PollWeightData()
         {
             string readResult;
-            bool succ = ReadWeightData(out readResult);
+            bool succ = ReadWeightData(out readResult, Tele3xxxEDV.C_TelegramLength);
             if (succ)
             {
-                OnParseReadWeightResult(readResult);
+                var msg = OnParseReadWeightResult(readResult);
                 _CountEmptyReads = 0;
-                if (CurrentScaleMode == PAScaleMode.ReadingWeightsRequested)
+                if (   msg == null 
+                    && _CountInvalidWeights == 0 
+                    && CurrentScaleMode == PAScaleMode.ReadingWeightsRequested)
                     CurrentScaleMode = PAScaleMode.ReadingWeights;
             }
-            else if (CurrentScaleMode == PAScaleMode.ReadingWeightsRequested)
+            else if (  CurrentScaleMode == PAScaleMode.ReadingWeightsRequested 
+                    || CurrentScaleMode == PAScaleMode.ReadingWeights)
             {
                 _CountEmptyReads++;
                 if (_CountEmptyReads > 5)
                 {
+                    if (CurrentScaleMode == PAScaleMode.ReadingWeights)
+                        CurrentScaleMode = PAScaleMode.ReadingWeightsRequested;
                     _CountEmptyReads = 0;
                     StartReadWeightData();
                 }
@@ -330,14 +348,18 @@ namespace soehnle.mes.processapplication
             if (!IsEnabledOpenPort())
             {
                 UpdateIsConnectedState();
+                return;
             }
+            if (CurrentScaleMode == PAScaleMode.Disconnect)
+                CurrentScaleMode = PAScaleMode.Init;
             if (TCPCommEnabled)
             {
                 try
                 {
                     using (ACMonitor.Lock(_61000_LockPort))
                     {
-                        _tcpClient = new TcpClient();
+                        if (_tcpClient == null)
+                            _tcpClient = new TcpClient();
                         if (this.WriteTimeout > 0)
                             _tcpClient.SendTimeout = this.WriteTimeout;
                         if (this.ReadTimeout > 0)
@@ -371,7 +393,8 @@ namespace soehnle.mes.processapplication
                 {
                     using (ACMonitor.Lock(_61000_LockPort))
                     {
-                        _serialPort = new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
+                        //_serialPort = new SerialPort(PortName, BaudRate, Parity, DataBits, StopBits);
+                        _serialPort = new SerialPort(PortName, BaudRate);
                         if (ReadTimeout > 0)
                             _serialPort.ReadTimeout = ReadTimeout;
                         else
@@ -441,6 +464,7 @@ namespace soehnle.mes.processapplication
                     _serialPort = null;
                 }
             }
+            CurrentScaleMode = PAScaleMode.Disconnect;
             IsConnected.ValueT = false;
         }
 
@@ -534,7 +558,7 @@ namespace soehnle.mes.processapplication
                         return new Msg(eMsgLevel.Error, "Alibi-Request not sended");
 
                     string readResult = null;
-                    if (!ReadWeightData(out readResult))
+                    if (!ReadWeightData(out readResult, Tele3xxxAlibi.C_TelegramLengthAlibi))
                         return new Msg(eMsgLevel.Error, "Alibi-Request not read");
 
                     string alibiResult = null;
@@ -645,7 +669,7 @@ namespace soehnle.mes.processapplication
             return false;
         }
 
-        protected bool ReadWeightData(out string readResult)
+        protected bool ReadWeightData(out string readResult, int teleLength = 0)
         {
             readResult = "";
             if (!IsEnabledClosePort())
@@ -661,7 +685,7 @@ namespace soehnle.mes.processapplication
                     else
                     {
                         var port = SerialPort;
-                        succ = Communicator.ReadWeightData(port, out readResult);
+                        succ = Communicator.ReadWeightData(port, teleLength, out readResult);
                     }
                     return succ;
                 }
@@ -672,9 +696,7 @@ namespace soehnle.mes.processapplication
                 if (IsAlarmActive("CommAlarm", e.Message) == null)
                     Messages.LogException(GetACUrl(), "PAETerminal3xxxBase.ReadWeightData()", e);
                 OnNewAlarmOccurred(CommAlarm, e.Message, true);
-                if (this.TcpClient == null || !this.TcpClient.Connected)
-                    OpenPort();
-                IsConnected.ValueT = this.TcpClient.Connected;
+                UpdateIsConnectedState();
             }
             return false;
         }
@@ -734,21 +756,30 @@ namespace soehnle.mes.processapplication
 
             try
             {
+                bool isSerialComm = SerialPort != null;
                 Tele3xxxEDV tele3XxxEDV = new Tele3xxxEDV(readResult);
                 if (tele3XxxEDV.InvalidWeight)
                 {
-                    StateScale.ValueT = PANotifyState.AlarmOrFault;
-                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
-                    OnNewAlarmOccurred(StateScale, msg, true);
-                    if (IsAlarmActive(StateScale, msg.Message) == null)
-                        Messages.LogMessageMsg(msg);
-                    Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
-                    return msg;
+                    _CountInvalidWeights++;
+                    if (  !isSerialComm
+                        || _CountInvalidWeights > 5)
+                    {
+                        _CountInvalidWeights = 0;
+                        StateScale.ValueT = PANotifyState.AlarmOrFault;
+                        Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                        OnNewAlarmOccurred(StateScale, msg, true);
+                        if (IsAlarmActive(StateScale, msg.Message) == null)
+                            Messages.LogMessageMsg(msg);
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                        return msg;
+                    }
                 }
                 else
                 {
+                    _CountInvalidWeights = 0;
                     StateScale.ValueT = PANotifyState.Off;
                     ActualValue.ValueT = tele3XxxEDV.WeightKg;
+                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
                     IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
 
                     if (tele3XxxEDV.IsOverLoad)
@@ -797,6 +828,7 @@ namespace soehnle.mes.processapplication
 
                     StateScale.ValueT = PANotifyState.Off;
                     ActualValue.ValueT = tele3XxxEDV.WeightKg;
+                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
                     IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
 
                     if (tele3XxxEDV.IsOverLoad)

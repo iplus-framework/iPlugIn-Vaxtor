@@ -43,7 +43,7 @@ namespace soehnle.mes.processapplication
         {
             get
             {
-                return 8;
+                return C_TelegramOffsetAlibi;
             }
         }
 
@@ -55,6 +55,8 @@ namespace soehnle.mes.processapplication
             }
         }
 
+        public const int C_TelegramOffsetAlibi = 8;
+        public const int C_TelegramLengthAlibi = C_TelegramLength + C_TelegramOffsetAlibi;
 
         public override string TelegramR
         {

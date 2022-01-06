@@ -114,9 +114,11 @@ namespace soehnle.mes.processapplication
         {
             get
             {
-                return 22;
+                return C_TelegramLength;
             }
         }
+
+        public const int C_TelegramLength = 22;
 
         private static CultureInfo _CultureInfo = new CultureInfo("de-DE");
         public const string C_EmptyWeightUnderload1 = "______";
@@ -129,6 +131,7 @@ namespace soehnle.mes.processapplication
         public bool IsOverLoad { get; private set; }
         public bool IsStandStill { get; private set; }
         public bool IsEmpty{ get; private set; }
+        public bool IsSerialComm { get; private set; }
         public string ScaleID { get; private set; }
         public ScaleValueTypeEnum ScaleValueType { get; private set; }
 
@@ -201,13 +204,26 @@ namespace soehnle.mes.processapplication
         #region Methods
         protected virtual string ExtractLastPart(string telegram)
         {
-            if (   String.IsNullOrEmpty(telegram) 
+            if (String.IsNullOrEmpty(telegram)
                 || telegram.Length < TelegramLength)
-                return "";
-            else if (telegram.Length > TelegramLength)
-                return telegram.Substring(telegram.Length - TelegramLength, TelegramLength);
+                return null;
             else
-                return telegram;
+            {
+                int restLength = 3;
+                int iUnit = telegram.LastIndexOf('k');
+                if (iUnit < 0)
+                {
+                    restLength = 4;
+                    iUnit = telegram.LastIndexOf('g');
+                    if (iUnit < 0)
+                        return null;
+                }
+                int startIndex = iUnit + restLength - TelegramLength;
+                if (startIndex < 0)
+                    return null;
+
+                return telegram.Substring(startIndex, TelegramLength);
+            }
         }
 
         public override string ToString()
