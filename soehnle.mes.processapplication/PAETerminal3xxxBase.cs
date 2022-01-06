@@ -333,7 +333,7 @@ namespace soehnle.mes.processapplication
                     if (CurrentScaleMode == PAScaleMode.ReadingWeights)
                         CurrentScaleMode = PAScaleMode.ReadingWeightsRequested;
                     _CountEmptyReads = 0;
-                    StartReadWeightData();
+                    SendStartReadingWeights();
                 }
             }
         }
