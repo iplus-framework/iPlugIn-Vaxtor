@@ -49,7 +49,15 @@ namespace soehnle.mes.processapplication
                 if (teleLength <= 0)
                     teleLength = Tele3xxxAlibi.C_TelegramLengthAlibi;
                 int readSize = (1024 / teleLength) * teleLength;
-                numberOfBytesRead = channel.Read(myReadBuffer, 0, readSize);
+                try
+                {
+                    numberOfBytesRead = channel.Read(myReadBuffer, 0, readSize);
+                }
+                catch(TimeoutException)
+                {
+                    return false;
+                }
+
                 //channel.DiscardInBuffer();
                 result = string.Format("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
                 return result != null;
@@ -77,6 +85,16 @@ namespace soehnle.mes.processapplication
             channel.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
             return true;
         }
+
+        public bool StartReadingWeights(SerialPort channel, byte[] command)
+        {
+            if (!channel.IsOpen)
+                return false;
+            channel.Write(command, 0, Cmd3xxx.C_CmdLength);
+            return true;
+        }
+
+
 
 
         public bool StopReadingWeights(TcpClient channel)
