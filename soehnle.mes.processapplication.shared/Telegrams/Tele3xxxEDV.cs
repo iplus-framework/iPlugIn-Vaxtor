@@ -10,9 +10,9 @@ namespace soehnle.mes.processapplication
         #region c'tors
         //EDV Standard
         //
-        // | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8| 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | .... | 42 |
+        // | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | .... | 42 |
 
-        // | 0 | 0 | 0 | 1 | 0 | 1 | N |  |   |    |    | -  | 1  | 0  | 0  | .  | 0  |    | kg |    |
+        // | 0 | 0 | 0 | 1 | 0 | 1 | N |   |   |   |    | -  | 1  | 0  | 0  |  0 | .  | 0  |    | k  |  g |    |
 
         //Status  | Scale | Net value with known value, prefix and dimension |
         //--------+-------+---------------------------------------------------
@@ -70,7 +70,7 @@ namespace soehnle.mes.processapplication
                 InvalidWeight = false;
                 if (tele[StartOffset + 11] == '-')
                     _WeightValue = _WeightValue * -1;
-                if (tele.Length >= 22)
+                if (tele.Length >= (StartOffset + 18 + 4))
                 {
                     string dimension = tele.Substring(StartOffset + 18, 4);
                     dimension = dimension.Trim();
@@ -204,7 +204,7 @@ namespace soehnle.mes.processapplication
         #region Methods
         protected virtual string ExtractLastPart(string telegram)
         {
-            if (String.IsNullOrEmpty(telegram)
+            if (   String.IsNullOrEmpty(telegram)
                 || telegram.Length < TelegramLength)
                 return null;
             else
@@ -213,14 +213,20 @@ namespace soehnle.mes.processapplication
                 int iUnit = telegram.LastIndexOf('k');
                 if (iUnit < 0)
                 {
-                    restLength = 4;
+                    restLength = 3;
                     iUnit = telegram.LastIndexOf('g');
                     if (iUnit < 0)
                         return null;
                 }
-                int startIndex = iUnit + restLength - TelegramLength;
+                int endIndex = iUnit + restLength;
+                int startIndex = endIndex - TelegramLength;
                 if (startIndex < 0)
                     return null;
+                else if (telegram.Length < endIndex)
+                {
+                    string previousParts = telegram.Substring(0, iUnit - 1);
+                    return ExtractLastPart(previousParts);
+                }
 
                 return telegram.Substring(startIndex, TelegramLength);
             }
