@@ -211,22 +211,38 @@ namespace soehnle.mes.processapplication
             {
                 int restLength = 3;
                 int iUnit = telegram.LastIndexOf('k');
+                // Check if unit is 'kg'
+                if (iUnit >= 0)
+                {
+                    if (telegram.Length > (iUnit + 1))
+                    {
+                        if (telegram[iUnit + 1] != 'g')
+                            iUnit = -1;
+                    }
+                    // Incomplete segment -> Extract previous segment
+                    else
+                        return ExtractLastPart(telegram.Substring(0, iUnit - 1));
+                }
+                // Check if unit is 'g ' (with space)
                 if (iUnit < 0)
                 {
                     restLength = 3;
                     iUnit = telegram.LastIndexOf('g');
                     if (iUnit < 0)
                         return null;
+                    // Incomplete segment if ther is no space after 'g' -> Extract previous segment
+                    else if (   telegram.Length <= (iUnit + 1)
+                            || telegram[iUnit + 1] != ' ')
+                        return ExtractLastPart(telegram.Substring(0, iUnit - 1));
                 }
                 int endIndex = iUnit + restLength;
                 int startIndex = endIndex - TelegramLength;
+                // Telegram doesn't contain a valid segment
                 if (startIndex < 0)
                     return null;
+                // Segment is to short (too few characters after unit) -> Extract previous segment
                 else if (telegram.Length < endIndex)
-                {
-                    string previousParts = telegram.Substring(0, iUnit - 1);
-                    return ExtractLastPart(previousParts);
-                }
+                    return ExtractLastPart(telegram.Substring(0, iUnit - 1));
 
                 return telegram.Substring(startIndex, TelegramLength);
             }
