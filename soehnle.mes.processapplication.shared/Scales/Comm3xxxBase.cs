@@ -41,7 +41,10 @@ namespace soehnle.mes.processapplication
         {
             result = null;
             if (channel == null)
+            {
                 return false;
+            }
+
             if (channel.IsOpen)
             {
                 byte[] myReadBuffer = new byte[1024];
