@@ -90,7 +90,7 @@ namespace soehnle.mes.processapplication
             {
                 channel.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
