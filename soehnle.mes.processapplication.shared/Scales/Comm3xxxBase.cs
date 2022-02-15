@@ -85,7 +85,15 @@ namespace soehnle.mes.processapplication
         {
             if (!channel.IsOpen)
                 return false;
-            channel.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
+
+            try
+            {
+                channel.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
             return true;
         }
 
