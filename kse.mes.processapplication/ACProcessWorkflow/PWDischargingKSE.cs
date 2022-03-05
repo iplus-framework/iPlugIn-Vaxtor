@@ -376,10 +376,10 @@ namespace kse.mes.processapplication
                         CheckIfAutomaticTargetChangePossible = null;
                         if (discharging != null && !IsMovingToDisPos.ValueT && !InCleaningCycle.ValueT)
                         {
-                            double actualQuantity = 0;
+                            double actualWeight = 0;
                             var acValue = e.GetACValue("ActualQuantity");
                             if (acValue != null)
-                                actualQuantity = acValue.ParamAsDouble;
+                                actualWeight = acValue.ParamAsDouble;
                             //short simulationWeight = (short)acMethod["Source"];
 
                             using (var db = new Database())
@@ -392,7 +392,7 @@ namespace kse.mes.processapplication
                                         currentBatchPos = ParentPWMethod<PWMethodProduction>().CurrentProdOrderPartslistPos.FromAppContext<ProdOrderPartslistPos>(dbApp);
                                         // Wenn kein Istwert von der Funktion zurückgekommen, dann berechne Zugangsmenge über die Summe der dosierten Mengen
                                         // Minus der bereits zugebuchten Menge (falls zyklische Zugagnsbuchungen im Hintergrund erfolgten)
-                                        if (actualQuantity <= 0.000001)
+                                        if (actualWeight <= 0.000001)
                                         {
                                             ACProdOrderManager prodOrderManager = ACProdOrderManager.GetServiceInstance(this);
                                             if (prodOrderManager != null)
@@ -402,21 +402,21 @@ namespace kse.mes.processapplication
                                                 {
                                                     double diff = calculatedBatchWeight - currentBatchPos.ActualQuantityUOM;
                                                     if (diff > 0.00001)
-                                                        actualQuantity = diff;
+                                                        actualWeight = diff;
                                                 }
                                             }
                                         }
 
                                         if ((this.IsSimulationOn/* || simulationWeight == 1*/)
-                                            && actualQuantity <= 0.000001
+                                            && actualWeight <= 0.000001
                                             && currentBatchPos != null)
                                         {
-                                            actualQuantity = currentBatchPos.TargetQuantityUOM;
+                                            actualWeight = currentBatchPos.TargetQuantityUOM;
                                         }
                                         // Entleerschritt liefert keine Menge
-                                        else if (actualQuantity <= 0.000001)
+                                        else if (actualWeight <= 0.000001)
                                         {
-                                            actualQuantity = -0.001;
+                                            actualWeight = -0.001;
                                         }
 
                                         var routeItem = CurrentDischargingDest(db);
@@ -425,7 +425,7 @@ namespace kse.mes.processapplication
                                         {
                                             try
                                             {
-                                                DoInwardBooking(actualQuantity, dbApp, routeItem, null, currentBatchPos, e, true);
+                                                DoInwardBooking(actualWeight, dbApp, routeItem, null, currentBatchPos, e, true);
                                             }
                                             finally
                                             {
