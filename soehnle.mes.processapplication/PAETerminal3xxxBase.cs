@@ -384,6 +384,8 @@ namespace soehnle.mes.processapplication
                     if (IsAlarmActive("CommAlarm", e.Message) == null)
                         Messages.LogException(GetACUrl(), "PAETerminal3xxxBase.OpenPort(10)", e);
                     OnNewAlarmOccurred(CommAlarm, e.Message, true);
+                    ClosePort();
+                    CurrentScaleMode = PAScaleMode.Init;
                 }
                 UpdateIsConnectedState();
             }
@@ -472,7 +474,7 @@ namespace soehnle.mes.processapplication
         {
             var client = TcpClient;
             if (client != null)
-                return client.Connected;
+                return true;
             var port = SerialPort;
             if (port != null)
                 return port.IsOpen;
