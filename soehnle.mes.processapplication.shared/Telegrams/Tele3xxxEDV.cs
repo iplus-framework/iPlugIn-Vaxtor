@@ -65,7 +65,7 @@ namespace soehnle.mes.processapplication
             if (!string.IsNullOrWhiteSpace(sWeight)
                 && sWeight != C_EmptyWeightUnderload1
                 && sWeight != C_EmptyWeightUnderload2
-                && Decimal.TryParse(sWeight, NumberStyles.AllowDecimalPoint, _CultureInfo, out _WeightValue))
+                && Decimal.TryParse(sWeight, NumberStyles.AllowDecimalPoint|NumberStyles.AllowLeadingSign, _CultureInfo, out _WeightValue))
             {
                 InvalidWeight = false;
                 if (tele[StartOffset + 11] == '-')
