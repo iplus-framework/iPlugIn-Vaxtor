@@ -771,8 +771,10 @@ namespace soehnle.mes.processapplication
                         Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
                         OnNewAlarmOccurred(StateScale, msg, true);
                         if (IsAlarmActive(StateScale, msg.Message) == null)
+                        {
                             Messages.LogMessageMsg(msg);
-                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                            Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                        }
                         return msg;
                     }
                 }
@@ -819,8 +821,10 @@ namespace soehnle.mes.processapplication
                     Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
                     OnNewAlarmOccurred(StateScale, msg, true);
                     if (IsAlarmActive(StateScale, msg.Message) == null)
+                    {
                         Messages.LogMessageMsg(msg);
-                    Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                    }
                     return msg;
                 }
                 else
