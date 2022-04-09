@@ -115,6 +115,9 @@ namespace soehnle.mes.processapplication
         /// </summary>
         [ACPropertyInfo(true, 404, "Config", "en{'Port-No.'}de{'Port-Nr.'}", DefaultValue = (int)23)]
         public int PortNo { get; set; }
+
+        [ACPropertyInfo(false, 405, "Config", "en{'Trace read values'}de{'Ausgabe gelesene Werte'}", DefaultValue = false)]
+        public bool TraceValues { get; set; }
         #endregion
 
 
@@ -758,34 +761,11 @@ namespace soehnle.mes.processapplication
 
             try
             {
-                bool isSerialComm = SerialPort != null;
+                bool isSerialComm = SerialPort != null || SerialCommEnabled;
                 Tele3xxxEDV tele3XxxEDV = new Tele3xxxEDV(readResult);
-                if (tele3XxxEDV.InvalidWeight)
-                {
-                    _CountInvalidWeights++;
-                    if (  !isSerialComm
-                        || _CountInvalidWeights > 5)
-                    {
-                        _CountInvalidWeights = 0;
-                        StateScale.ValueT = PANotifyState.AlarmOrFault;
-                        Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
-                        OnNewAlarmOccurred(StateScale, msg, true);
-                        if (IsAlarmActive(StateScale, msg.Message) == null)
-                        {
-                            Messages.LogMessageMsg(msg);
-                            Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
-                        }
-                        return msg;
-                    }
-                }
-                else
-                {
-                    _CountInvalidWeights = 0;
-                    StateScale.ValueT = PANotifyState.Off;
-                    ActualValue.ValueT = tele3XxxEDV.WeightKg;
-                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
-                    IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
 
+                if (!tele3XxxEDV.InvalidTelegram)
+                {
                     if (tele3XxxEDV.IsOverLoad)
                         StateUL2.ValueT = PANotifyState.AlarmOrFault;
                     else
@@ -795,6 +775,36 @@ namespace soehnle.mes.processapplication
                         StateLL2.ValueT = PANotifyState.AlarmOrFault;
                     else
                         StateLL2.ValueT = PANotifyState.Off;
+                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
+                    IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
+                    StateScale.ValueT = PANotifyState.Off;
+                }
+
+                if (tele3XxxEDV.InvalidWeight)
+                {
+                    _CountInvalidWeights++;
+                    if (  !isSerialComm
+                        || _CountInvalidWeights > 5)
+                    {
+                        _CountInvalidWeights = 0;
+                        if (tele3XxxEDV.InvalidTelegram)
+                        {
+                            StateScale.ValueT = PANotifyState.AlarmOrFault;
+                            Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                            if (IsAlarmActive(StateScale, msg.Message) == null)
+                            {
+                                Messages.LogMessageMsg(msg);
+                                Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                            }
+                            OnNewAlarmOccurred(StateScale, msg, true);
+                            return msg;
+                        }
+                    }
+                }
+                else
+                {
+                    _CountInvalidWeights = 0;
+                    ActualValue.ValueT = tele3XxxEDV.WeightKg;
                 }
             }
             catch (Exception ex)
@@ -815,28 +825,8 @@ namespace soehnle.mes.processapplication
             try
             {
                 Tele3xxxAlibi tele3XxxEDV = new Tele3xxxAlibi(readResult);
-                if (tele3XxxEDV.InvalidWeight)
+                if (!tele3XxxEDV.InvalidTelegram)
                 {
-                    StateScale.ValueT = PANotifyState.AlarmOrFault;
-                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
-                    OnNewAlarmOccurred(StateScale, msg, true);
-                    if (IsAlarmActive(StateScale, msg.Message) == null)
-                    {
-                        Messages.LogMessageMsg(msg);
-                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
-                    }
-                    return msg;
-                }
-                else
-                {
-                    alibiNo = tele3XxxEDV.AlibiNumber;
-                    alibiWeight = tele3XxxEDV.WeightKg;
-
-                    StateScale.ValueT = PANotifyState.Off;
-                    ActualValue.ValueT = tele3XxxEDV.WeightKg;
-                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
-                    IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
-
                     if (tele3XxxEDV.IsOverLoad)
                         StateUL2.ValueT = PANotifyState.AlarmOrFault;
                     else
@@ -846,6 +836,28 @@ namespace soehnle.mes.processapplication
                         StateLL2.ValueT = PANotifyState.AlarmOrFault;
                     else
                         StateLL2.ValueT = PANotifyState.Off;
+                    NotStandStill.ValueT = !tele3XxxEDV.IsStandStill;
+                    IsDosing.ValueT = !tele3XxxEDV.IsStandStill;
+                    StateScale.ValueT = PANotifyState.Off;
+                }
+
+                if (tele3XxxEDV.InvalidWeight)
+                {
+                    StateScale.ValueT = PANotifyState.AlarmOrFault;
+                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                    if (IsAlarmActive(StateScale, msg.Message) == null)
+                    {
+                        Messages.LogMessageMsg(msg);
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                    }
+                    OnNewAlarmOccurred(StateScale, msg, true);
+                    return msg;
+                }
+                else
+                {
+                    alibiNo = tele3XxxEDV.AlibiNumber;
+                    alibiWeight = tele3XxxEDV.WeightKg;
+                    ActualValue.ValueT = tele3XxxEDV.WeightKg;
                 }
             }
             catch (Exception ex)

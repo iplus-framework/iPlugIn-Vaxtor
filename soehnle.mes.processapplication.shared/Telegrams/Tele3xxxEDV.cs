@@ -27,8 +27,9 @@ namespace soehnle.mes.processapplication
 
         public Tele3xxxEDV(string telegram)
         {
-            IsUnderLoad = true;
-            IsOverLoad = true;
+            InvalidTelegram = true;
+            IsUnderLoad = false;
+            IsOverLoad = false;
             IsStandStill = false;
             IsEmpty = false;
             ScaleID = null;
@@ -41,6 +42,7 @@ namespace soehnle.mes.processapplication
             if (String.IsNullOrEmpty(tele))
                 return;
 
+            InvalidTelegram = false;
             IsUnderLoad = tele[StartOffset + 0] == '1';
             IsOverLoad = tele[StartOffset + 1] == '1';
             IsStandStill = tele[StartOffset + 2] == '1';
@@ -161,7 +163,10 @@ namespace soehnle.mes.processapplication
                     return Convert.ToDouble(WeightValue) / 1000;
             }
         }
+
         public bool InvalidWeight { get; private set; }
+
+        public bool InvalidTelegram { get; private set; }
 
         public virtual string TelegramR
         {
