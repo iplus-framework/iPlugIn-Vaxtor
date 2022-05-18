@@ -34,6 +34,8 @@ namespace kse.mes.processapplication
             paramTranslation.Add("CleaningDest", "en{'Cleanining postion'}de{'Reinigungsposition'}");
             method.ParameterValueList.Add(new ACValue("InterlockACUrl", typeof(string), null, Global.ParamOption.Optional));
             paramTranslation.Add("InterlockACUrl", "en{'Interlock with Workflow-ACUrl'}de{'Verriegelung mit Workflow-ACUrl'}");
+            method.ParameterValueList.Add(new ACValue("SkipPredCount", typeof(short), 0, Global.ParamOption.Optional));
+            paramTranslation.Add("SkipPredCount", "en{'Count of dosing nodes to find (Predecessors)'}de{'Anzahl zu suchender Dosierknoten (Vorgänger)'}");
 
             var wrapper = new ACMethodWrapper(method, "en{'Configuration'}de{'Konfiguration'}", typeof(PWDischargingKSE), paramTranslation, null);
             ACMethod.RegisterVirtualMethod(typeof(PWDischargingKSE), ACStateConst.SMStarting, wrapper);
