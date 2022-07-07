@@ -304,7 +304,10 @@ namespace systec.mes.processapplication
                 {
                     ClosePort();
                     LastWeight.ValueT = Math.Abs(weight).ToString();
-                    return new ITx000Result(weight, eichNr.ToString(), eichNrError);
+                    ITx000Result itResult = new ITx000Result(weight, eichNr.ToString(), eichNrError);
+                    itResult.Date = readResult.Substring(3, 8);
+                    itResult.Time = readResult.Substring(11, 5);
+                    return itResult;
                 }
                 else
                 {
