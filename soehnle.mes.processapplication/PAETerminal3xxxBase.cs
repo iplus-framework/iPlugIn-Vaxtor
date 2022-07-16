@@ -844,11 +844,11 @@ namespace soehnle.mes.processapplication
                 if (tele3XxxEDV.InvalidWeight)
                 {
                     StateScale.ValueT = PANotifyState.AlarmOrFault;
-                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseAlibiResult(10)", 504, "Error50306");
                     if (IsAlarmActive(StateScale, msg.Message) == null)
                     {
                         Messages.LogMessageMsg(msg);
-                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseAlibiResult(10a)", "String to parse:" + readResult);
                     }
                     OnNewAlarmOccurred(StateScale, msg, true);
                     return msg;
