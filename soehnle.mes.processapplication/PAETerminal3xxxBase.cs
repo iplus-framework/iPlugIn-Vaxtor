@@ -118,6 +118,9 @@ namespace soehnle.mes.processapplication
 
         [ACPropertyInfo(false, 405, "Config", "en{'Trace read values'}de{'Ausgabe gelesene Werte'}", DefaultValue = false)]
         public bool TraceValues { get; set; }
+
+        [ACPropertyInfo(false, 406, "Config", "en{'IgnoreInvalidTeleLength}de{'IgnoreInvalidTeleLength'}", DefaultValue = false)]
+        public bool IgnoreInvalidTeleLength { get; set; }
         #endregion
 
 
@@ -562,9 +565,13 @@ namespace soehnle.mes.processapplication
                     if (!SendReadAlibiCmd())
                         return new Msg(eMsgLevel.Error, "Alibi-Request not sended");
 
+                    Thread.Sleep(1000);
+
                     string readResult = null;
                     if (!ReadWeightData(out readResult, Tele3xxxAlibi.C_TelegramLengthAlibi))
                         return new Msg(eMsgLevel.Error, "Alibi-Request not read");
+                    if (TraceValues)
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnRegisterAlibiWeight(10)", "String to parse:" + readResult);
 
                     string alibiResult = null;
                     double alibiWeight = ActualWeight.ValueT;
@@ -789,14 +796,17 @@ namespace soehnle.mes.processapplication
                         _CountInvalidWeights = 0;
                         if (tele3XxxEDV.InvalidTelegram)
                         {
-                            StateScale.ValueT = PANotifyState.AlarmOrFault;
                             Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
-                            if (IsAlarmActive(StateScale, msg.Message) == null)
+                            if (IsAlarmActive(StateScale, msg.Message) == null || IgnoreInvalidTeleLength)
                             {
                                 Messages.LogMessageMsg(msg);
                                 Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnParseReadWeightResult(10a)", "String to parse:" + readResult);
                             }
-                            OnNewAlarmOccurred(StateScale, msg, true);
+                            if (!IgnoreInvalidTeleLength)
+                            {
+                                StateScale.ValueT = PANotifyState.AlarmOrFault;
+                                OnNewAlarmOccurred(StateScale, msg, true);
+                            }
                             return msg;
                         }
                     }
