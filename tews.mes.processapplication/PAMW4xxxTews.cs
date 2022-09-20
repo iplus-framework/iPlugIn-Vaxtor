@@ -285,11 +285,7 @@ namespace tews.mes.processapplication
         {
             if (!base.ACInit(startChildMode))
                 return false;
-            (CurrentMoisture as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
-            (ProductFlow as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
             (Status as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
-            (StoredMoisture as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
-            (TargetTemperature as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
             return true;
         }
 
@@ -297,13 +293,7 @@ namespace tews.mes.processapplication
 
         public override bool ACDeInit(bool deleteACClassTask = false)
         {
-            (CurrentMoisture as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
-            (ProductFlow as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
             (Status as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
-            (StoredMoisture as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
-            (TargetTemperature as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
-            //if (ApplicationManager != null)
-            //    ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
             return base.ACDeInit(deleteACClassTask);
         }
 
@@ -436,7 +426,7 @@ namespace tews.mes.processapplication
         /// Input register 30015 – uint16 – Product number 
         /// </summary>
         [ACPropertyBindingTarget(609, "Read", "en{'Product number '}de{'Produktnummer'}", "", false, false)]
-        public IACContainerTNet<Int32> CurrentProductNumber  { get; set; }
+        public IACContainerTNet<UInt32> CurrentProductNumber  { get; set; }
 
         #endregion
 
@@ -452,7 +442,7 @@ namespace tews.mes.processapplication
         /// Holding register 40001 – uint16 – product number 
         /// </summary>
         [ACPropertyBindingTarget(651, "Write", "en{'Product Code/No. Write'}de{'Produktnummer Soll'}", "", false, false)]
-        public IACContainerTNet<Int32> ProductCode { get; set; }
+        public IACContainerTNet<UInt32> ProductCode { get; set; }
 
         /// <summary>
         /// Holding register 40002,40003 – float – product temperature 
@@ -475,76 +465,6 @@ namespace tews.mes.processapplication
         #endregion
 
 
-        #region External (PLC)
-
-        #region Input
-        /// <summary>
-        /// Transport runs (Starfeeder is on)
-        /// </summary>
-        [ACPropertyBindingTarget(620, "Read PLC", "en{'Product flow'}de{'Produktfluss'}", "", false, false)]
-        public IACContainerTNet<bool> ProductFlow { get; set; }
-
-        /// <summary>
-        /// Funnel is refilling. Trichter wird neu befüllt / Deck wird in Trichter entleert
-        /// </summary>
-        [ACPropertyBindingSource(621, "Read PLC", "en{'Funnel is refilling'}de{'Trichter wird neu befüllt'}", "", false, true)]
-        public IACContainerTNet<bool> FunnelRefilling { get; set; }
-        #endregion
-
-        #region Output
-        /// <summary>
-        /// Average density for PLC
-        /// </summary>
-        [ACPropertyBindingSource(622, "Send PLC", "en{'Average density'}de{'Dichte Mittelwert'}", "", false, true)]
-        public IACContainerTNet<float> PlcDensityAvg
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Average Temperature for PLC
-        /// </summary>
-        [ACPropertyBindingSource(623, "Send PLC", "en{'Average Temperature'}de{'Temperatur Mittelwert'}", "", false, true)]
-        public IACContainerTNet<float> PlcTemperatureAvg
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Average calculation time for PLC
-        /// </summary>
-        [ACPropertyBindingSource(624, "Send PLC", "en{'Time of average calc'}de{'Zeitpunkt letzte Mittelwertberechnung'}", "", false, true)]
-        public IACContainerTNet<DateTime> PlcAvgTime
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Current density for PLC
-        /// </summary>
-        [ACPropertyBindingSource(625, "Send PLC", "en{'Current density PLC'}de{'Aktuelle Dichte SPS'}", "", false, true)]
-        public IACContainerTNet<float> PlcDensityCurrent
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Current temperature for PLC
-        /// </summary>
-        [ACPropertyBindingSource(626, "Send PLC", "en{'Current Temperature PLC'}de{'Aktuelle Temperatur SPS'}", "", false, true)]
-        public IACContainerTNet<float> PlcTemperatureCurrent
-        {
-            get;
-            set;
-        }
-        #endregion
-
-        #endregion
-
         #region Alarms
 
         [ACPropertyBindingSource(670, "Error", "en{'External dump error'}de{'External dump error'}", "", false, false)]
@@ -554,14 +474,26 @@ namespace tews.mes.processapplication
 
         #region Private members
 
-        private bool _IsDumpRequested = false;
-        private short _DumpCommandStatus = 0;
-
-        //private bool _IsStatusBit03Off = false;
-        //private bool _SamplingActive = false;
-        //private DateTime? _SampleIDChanged = null;
-        //private int _ErrorExternalDumpCounter = 0;
-        //private int _SuccessExternalDumpCounter = 0;
+        private PAMW4xxxTewsStatus _PreviousStatus;
+        protected PAMW4xxxTewsStatus PreviousStatus
+        {
+            get
+            {
+                using (ACMonitor.Lock(_20015_LockValue))
+                {
+                    return _PreviousStatus;
+                }
+            }
+            set
+            {
+                using (ACMonitor.Lock(_20015_LockValue))
+                {
+                    _PreviousStatus = value;
+                }
+            }
+        }
+        DateTime _LastMeasurementReadyGoneTrue = DateTime.Now;
+        DateTime _LastMeasurementReadyGoneFalse = DateTime.Now;
 
         #endregion
 
@@ -576,21 +508,18 @@ namespace tews.mes.processapplication
             result = null;
             switch (acMethodName)
             {
-                //case "DoExternalDump":
-                //    DoExternalDump();
-                //    return true;
-                //case Const.IsEnabledPrefix + "DoExternalDump":
-                //    result = IsEnabledDoExternalDump();
-                //    return true;
-                //case "ResetExternalDump":
-                //    ResetExternalDump();
-                //    return true;
-                //case "ResetACK":
-                //    ResetACK();
-                //    return true;
-                //case Const.IsEnabledPrefix + "ResetACK":
-                //    result = IsEnabledResetACK();
-                //    return true;
+                case nameof(StartMeasurement):
+                    StartMeasurement();
+                    return true;
+                case Const.IsEnabledPrefix + nameof(StartMeasurement):
+                    result = IsEnabledStartMeasurement();
+                    return true;
+                case nameof(StopMeasurement):
+                    StopMeasurement();
+                    return true;
+                case Const.IsEnabledPrefix + nameof(StopMeasurement):
+                    result = IsEnabledStopMeasurement();
+                    return true;
             }
             return base.HandleExecuteACMethod(out result, invocationMode, acMethodName, acClassMethod, acParameter);
         }
@@ -607,162 +536,24 @@ namespace tews.mes.processapplication
 
         private void PAMW4xxxTews_ValueUpdatedOnReceival(object sender, ACPropertyChangedEventArgs e, ACPropertyChangedPhase phase)
         {
-            /*
             if (phase == ACPropertyChangedPhase.AfterBroadcast)
             {
-                if (sender == DensityValue)
+                if (sender == Status)
                 {
-                    // Refresh Sensor-Value only if Measuring active and no errors
-                    if (BDS2Status != null && BDS2Status.ValueT.Bit01_NoErrors)
-                    // && BDS2Status.ValueT.Bit03_SamplingActive) // Change 19.02.2021. Mr. Kuester
+                    PAMW4xxxTewsStatus prevStatus = PreviousStatus;
+                    if (prevStatus != null)
                     {
-                        (ActualValue as IACPropertyNetTarget).ChangeValueServer((double)DensityValue.ValueT, false, e.ValueEvent.InvokerInfo);
-                    }
-                }
-                else if (sender == ProductFlow && e.ValueEvent.InvokerInfo != null)
-                {
-                    if (BDS2Cmd != null)
-                    {
-                        BDS2Cmd.ValueT.Bit00_StartSampling = ProductFlow.ValueT;
-                        if (SendNewBatchWithFlow && ProductFlow.ValueT)
-                            BDS2Cmd.ValueT.Bit02_NewBatch = true;
-                    }
-                }
-                else if (sender == BDS2Status)
-                {
-
-                    // Falls Fehler-Quittung gesetzt und keine Fehler anstehen, dann muss Startup-Kommandogesetzt werden
-                    if (BDS2Status.ValueT.Bit01_NoErrors && BDS2Cmd.ValueT.Bit06_ResetACK)
-                    {
-                        if (this.ApplicationManager != null)
-                        {
-                            this.ApplicationManager.ApplicationQueue.Add(() =>
-                            {
-                                BDS2Cmd.ValueT.Bit07_StartUpBDS = true;
-                                BDS2Cmd.ValueT.Bit06_ResetACK = false;
-                            });
-                        }
-                    }
-                    if (BDS2Status.ValueT.Bit01_NoErrors
-                        && BDS2Status.ValueT.Bit02_Ready
-                        && BDS2Cmd.ValueT.Bit07_StartUpBDS)
-                    {
-                        if (this.ApplicationManager != null)
-                        {
-                            this.ApplicationManager.ApplicationQueue.Add(() =>
-                            {
-                                BDS2Cmd.ValueT.Bit07_StartUpBDS = false;
-                            });
-                        }
+                        if (Status.ValueT.Bit01_MeasurementReady && !prevStatus.Bit01_MeasurementReady)
+                            _LastMeasurementReadyGoneTrue = DateTime.Now;
+                        else if (!Status.ValueT.Bit01_MeasurementReady && prevStatus.Bit01_MeasurementReady)
+                            _LastMeasurementReadyGoneFalse = DateTime.Now;
                     }
 
-                    bool isFirstCycle = false;
-                    using (ACMonitor.Lock(_20015_LockValue))
-                        isFirstCycle = ExternalDumpCycle.ValueT == 1;
-
-                    if (_IsDumpRequested)
-                    {
-                        short commandStatus = -1;
-                        using (ACMonitor.Lock(_20015_LockValue))
-                        {
-                            commandStatus = _DumpCommandStatus;
-                        }
-
-                        if (commandStatus == 0) //Wait for status Bit03_SamplingActive set to false
-                        {
-                            if (!BDS2Status.ValueT.Bit03_SamplingActive)
-                            {
-                                using (ACMonitor.Lock(_20015_LockValue))
-                                {
-                                    _DumpCommandStatus = 1;
-                                    commandStatus = _DumpCommandStatus;
-                                }
-                            }
-                        }
-
-                        if (commandStatus == 1) //Request a new cycle and a dump with command Bit00_StartSampling and Bit01_ExternalDump
-                        {
-                            if (this.ApplicationManager != null)
-                            {
-                                this.ApplicationManager.ApplicationQueue.Add(() =>
-                                {
-                                    BDS2Cmd.ValueT.Bit00_StartSampling = true;
-                                    BDS2Cmd.ValueT.Bit01_ExternalDump = true;
-                                });
-
-                                using (ACMonitor.Lock(_20015_LockValue))
-                                {
-                                    _DumpCommandStatus = 2;
-                                    commandStatus = _DumpCommandStatus;
-                                }
-                            }
-                        }
-
-                        if (commandStatus == 2) //If the status bits 3 and 6 are both at 1, reset both command bits
-                        {
-                            bool isLastDumpCycle = false;
-
-                            if (ExternalDumpCycle.ValueT == MaxExternalDumpCycles)
-                            {
-                                isLastDumpCycle = true;
-                            }
-
-                            if (BDS2Status.ValueT.Bit03_SamplingActive && BDS2Status.ValueT.Bit06_ExternalDump && this.ApplicationManager != null)
-                            {
-                                this.ApplicationManager.ApplicationQueue.Add(() =>
-                                {
-                                    if (!isLastDumpCycle)
-                                        BDS2Cmd.ValueT.Bit00_StartSampling = false;
-                                    BDS2Cmd.ValueT.Bit01_ExternalDump = false;
-                                });
-
-                                using (ACMonitor.Lock(_20015_LockValue))
-                                {
-                                    _DumpCommandStatus = 0;
-                                    ExternalDumpCycle.ValueT += 1;
-
-                                    if (isLastDumpCycle)
-                                    {
-                                        _IsDumpRequested = false;
-                                    }
-                                }
-                            }
-                        }
-
-
-                    }
-                }
-                else if (sender == SampleID)
-                {
-                    // Reset New-Batch if SampleID was reset to zero or changed
-                    if (BDS2Cmd.ValueT.Bit02_NewBatch)
-                        BDS2Cmd.ValueT.Bit02_NewBatch = false;
-                    if (LastSampleID.ValueT != SampleID.ValueT)
-                    {
-                        bool isDumpRequested = false;
-                        using (ACMonitor.Lock(_20015_LockValue))
-                        {
-                            isDumpRequested = _IsDumpRequested;
-                        }
-
-                        if (isDumpRequested)
-                            LastDump.ValueT = DateTime.Now;
-
-                        LastSampleID.ValueT = SampleID.ValueT;
-                    }
-                }
-                else if (sender == DensityCorrFact)
-                {
-                    // After Restarting a BDS-Unit the DensityCorrection-Factor is zero => Reset it to 1;
-                    if (DensityCorrFact.ValueT < 0.001
-                        && e.ValueEvent.EventType == EventTypes.ValueChangedInSource
-                        && this.ApplicationManager != null)
-                    {
-                        this.ApplicationManager.ApplicationQueue.Add(() => { DensityCorrFact.ValueT = 1; });
-                    }
+                    prevStatus = new PAMW4xxxTewsStatus(Status.ValueT.ValueTypeACClass);
+                    prevStatus.ValueT = Status.ValueT.ValueT;
+                    PreviousStatus = prevStatus;
                 }
             }
-            */
         }
 
         //private void ApplicationManager_ProjectWorkCycleR1sec(object sender, EventArgs e)
@@ -828,121 +619,37 @@ namespace tews.mes.processapplication
         #endregion
 
         #region Client-Methods
-        //[ACMethodInteraction("", "en{'External dump'}de{'Probe (extern)'}", 601, true)]
-        //public virtual void DoExternalDump()
-        //{
-        //    if (!IsEnabledDoExternalDump())
-        //        return;
+        [ACMethodInteraction("", "en{'Start measurement'}de{'Messung starten'}", 601, true)]
+        public virtual void StartMeasurement()
+        {
+            if (!IsEnabledStartMeasurement())
+                return;
+            this.Cmd.ValueT.Bit08_StartStop = true;
+        }
 
-        //    //using (ACMonitor.Lock(_20015_LockValue))
-        //    //{
-        //    //    BDS2Cmd.ValueT.Bit00_StartSampling = false;
-        //    //    BDS2Cmd.ValueT.Bit01_ExternalDump = false;
+        public virtual bool IsEnabledStartMeasurement()
+        {
+            return Cmd != null && Status != null && ProductCode.ValueT > 0;
+        }
 
-        //    //    _IsDumpRequested = true;
-        //    //    _DumpCommandStatus = 0;
+        [ACMethodInteraction("", "en{'Stop measurement'}de{'Messung stoppen'}", 602, true)]
+        public virtual void StopMeasurement()
+        {
+            if (!IsEnabledStopMeasurement())
+                return;
+            this.Cmd.ValueT.Bit08_StartStop = false;
+        }
 
-
-        //    //    ExternalDumpCycle.ValueT = 1;
-        //    //}
-
-        //    //if (StartDumpIfSamplingInactiveBit03 && !BDS2Status.ValueT.Bit03_SamplingActive)
-        //    //{
-        //    //    if (this.ApplicationManager != null)
-        //    //    {
-        //    //        this.ApplicationManager.ApplicationQueue.Add(() =>
-        //    //        {
-        //    //            BDS2Cmd.ValueT.Bit00_StartSampling = true;
-        //    //            BDS2Cmd.ValueT.Bit01_ExternalDump = true;
-        //    //        });
-
-        //    //        using (ACMonitor.Lock(_20015_LockValue))
-        //    //        {
-        //    //            _DumpCommandStatus = 2;
-        //    //        }
-        //    //    }
-        //    //}
-        //}
-
-        //public virtual bool IsEnabledDoExternalDump()
-        //{
-        //    return Cmd != null && Status != null;// && (!BDS2Cmd.ValueT.Bit01_ExternalDump || !BDS2Status.ValueT.Bit06_ExternalDump);
-        //}
-
-        //[ACMethodInteraction("", "en{'Reset external dump'}de{'Reset probe (extern)'}", 602, true)]
-        //public virtual void ResetExternalDump()
-        //{
-        //    using (ACMonitor.Lock(_20015_LockValue))
-        //    {
-        //        //BDS2Cmd.ValueT.Bit01_ExternalDump = false;
-        //        _IsDumpRequested = false;
-        //        _DumpCommandStatus = 0;
-        //    }
-        //}
-
-        //[ACMethodInteraction("", "en{'Alarm acknoledge'}de{'Alarmquittung'}", 603, true)]
-        //public virtual void ResetACK()
-        //{
-        //    if (!IsEnabledResetACK())
-        //        return;
-        //    //BDS2Cmd.ValueT.Bit06_ResetACK = true;
-        //}
-
-        //public virtual bool IsEnabledResetACK()
-        //{
-        //    return Cmd != null && Status != null;// && !BDS2Cmd.ValueT.Bit06_ResetACK && !BDS2Status.ValueT.Bit01_NoErrors;
-        //}
+        public virtual bool IsEnabledStopMeasurement()
+        {
+            return Cmd != null && Status != null;
+        }
 
         #endregion
 
         protected override void DumpPropertyList(XmlDocument doc, XmlElement xmlACPropertyList)
         {
             base.DumpPropertyList(doc, xmlACPropertyList);
-
-            XmlElement xmlChild = xmlACPropertyList["IsDumpRequested"];
-            if (xmlChild == null)
-            {
-                xmlChild = doc.CreateElement("IsDumpRequested");
-                if (xmlChild != null)
-                    xmlChild.InnerText = _IsDumpRequested.ToString();
-                xmlACPropertyList.AppendChild(xmlChild);
-            }
-
-            xmlChild = xmlACPropertyList["DumpCommandStatus"];
-            if (xmlChild == null)
-            {
-                xmlChild = doc.CreateElement("DumpCommandStatus");
-                if (xmlChild != null)
-                    xmlChild.InnerText = _DumpCommandStatus.ToString();
-                xmlACPropertyList.AppendChild(xmlChild);
-            }
-
-            //xmlChild = xmlACPropertyList["SampleIDChanged"];
-            //if (xmlChild == null)
-            //{
-            //    xmlChild = doc.CreateElement("SampleIDChanged");
-            //    if (xmlChild != null)
-            //        xmlChild.InnerText = _SampleIDChanged?.ToString();
-            //    xmlACPropertyList.AppendChild(xmlChild);
-            //}
-
-            //xmlChild = xmlACPropertyList["ErrorExternalDumpCounter"];
-            //if (xmlChild == null)
-            //{
-            //    xmlChild = doc.CreateElement("ErrorExternalDumpCounter");
-            //    if (xmlChild != null)
-            //        xmlChild.InnerText = _ErrorExternalDumpCounter.ToString();
-            //    xmlACPropertyList.AppendChild(xmlChild);
-            //}
-
-            //xmlChild = xmlACPropertyList["SuccessExternalDumpCounter"];
-            //if (xmlChild == null)
-            //{
-            //    xmlChild = doc.CreateElement("SuccessExternalDumpCounter");
-            //    if (xmlChild != null)
-            //        xmlChild.InnerText = _SuccessExternalDumpCounter.ToString();
-            //    xmlACPropertyList.AppendChild(xmlChild);
-            //}
         }
 
         #endregion
