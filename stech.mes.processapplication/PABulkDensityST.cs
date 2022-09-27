@@ -274,8 +274,8 @@ namespace stech.mes.processapplication
             if (prop2Bind != null && prop2Bind.Source == null)
                 PAStateConverterBase.BindProperty(Session, "HoldingR", prop2Bind, "ProductCode", out newProp, out message);
             prop2Bind = DensityCorrFact as IACPropertyNetTarget;
-            //if (prop2Bind != null && prop2Bind.Source == null)
-            //    PAStateConverterBase.BindProperty(Session, "HoldingR", prop2Bind, "DensityCorrFact", out newProp, out message); According Steuerung Schüttgewicht Josera Rev.06
+            if (prop2Bind != null && prop2Bind.Source == null)
+                PAStateConverterBase.BindProperty(Session, "HoldingR", prop2Bind, "DensityCorrFact", out newProp, out message);
             prop2Bind = MoistureSpan as IACPropertyNetTarget;
             if (prop2Bind != null && prop2Bind.Source == null)
                 PAStateConverterBase.BindProperty(Session, "HoldingR", prop2Bind, "MoistureSpan", out newProp, out message);
