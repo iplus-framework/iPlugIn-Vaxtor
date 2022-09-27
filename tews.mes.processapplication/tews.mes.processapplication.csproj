@@ -63,8 +63,11 @@
       <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="VBControlScripts\" />
+    <None Include="VBControlScripts\2022-09-27 07-41_dlisak.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

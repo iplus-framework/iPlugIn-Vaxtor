@@ -285,6 +285,7 @@ namespace tews.mes.processapplication
         {
             if (!base.ACInit(startChildMode))
                 return false;
+            _MaxResponseWaitingTime = new ACPropertyConfigValue<ushort>(this, nameof(MaxResponseWaitingTime), 10);
             (Status as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
             (ErrorStatus as IACPropertyNetServer).ValueUpdatedOnReceival += PAMW4xxxTews_ValueUpdatedOnReceival;
             return true;
@@ -294,6 +295,8 @@ namespace tews.mes.processapplication
 
         public override bool ACDeInit(bool deleteACClassTask = false)
         {
+            if (this.ApplicationManager != null)
+                this.ApplicationManager.ProjectWorkCycleR1sec -= ApplicationManager_ProjectWorkCycleR1sec;
             (Status as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
             (ErrorStatus as IACPropertyNetServer).ValueUpdatedOnReceival -= PAMW4xxxTews_ValueUpdatedOnReceival;
             return base.ACDeInit(deleteACClassTask);
@@ -303,8 +306,15 @@ namespace tews.mes.processapplication
         public override bool ACPostInit()
         {
             bool result = base.ACPostInit();
+            if (this.ApplicationManager != null)
+                this.ApplicationManager.ProjectWorkCycleR1sec += ApplicationManager_ProjectWorkCycleR1sec;
             BindMyProperties();
             return result;
+        }
+
+        private void ApplicationManager_ProjectWorkCycleR1sec(object sender, EventArgs e)
+        {
+            //ToggleBits();
         }
 
         protected bool _PropertiesBound = false;
@@ -365,6 +375,19 @@ namespace tews.mes.processapplication
         #region Properties
 
         #region Configuration
+        private ACPropertyConfigValue<ushort> _MaxResponseWaitingTime;
+        [ACPropertyConfig("en{'Max. waiting time for response [sec]'}de{'Max. waiting time for response [sec]'}")]
+        public ushort MaxResponseWaitingTime
+        {
+            get
+            {
+                return _MaxResponseWaitingTime.ValueT;
+            }
+            set
+            {
+                _MaxResponseWaitingTime.ValueT = value;
+            }
+        }
         #endregion
 
         #region Read from Device
@@ -553,8 +576,7 @@ namespace tews.mes.processapplication
 
                     PreviousStatus = currentStatus;
 
-                    if (Cmd.ValueT.Bit06_AckAlarm)
-                        Cmd.ValueT.Bit06_AckAlarm = false;
+                    ToggleBits();
                 }
                 else if (sender == ErrorStatus)
                 {
@@ -576,13 +598,25 @@ namespace tews.mes.processapplication
         {
             if (!IsEnabledStartMeasurement())
                 return;
-            this.Cmd.ValueT.Bit07_StartStop = true;
+            Cmd.ValueT.Bit07_StartStop = true;
+            //if (this.ApplicationManager != null)
+            //{
+            //    this.ApplicationManager.ApplicationQueue.Add(() =>
+            //    {
+            //        ToggleBits();
+            //    });
+            //}
             _LastStart = DateTime.Now;
         }
 
         public virtual bool IsEnabledStartMeasurement()
         {
-            return Cmd != null && Status != null && ProductCode.ValueT > 0;
+            return Cmd != null 
+                && Status != null 
+                && ProductCode.ValueT > 0 
+                && !Status.ValueT.Bit04_MeasurementRun 
+                && !Cmd.ValueT.Bit07_StartStop
+                && (DateTime.Now - _LastStart).TotalSeconds > MaxResponseWaitingTime;
         }
 
         [ACMethodInteraction("", "en{'Stop measurement'}de{'Messung stoppen'}", 602, true)]
@@ -590,13 +624,24 @@ namespace tews.mes.processapplication
         {
             if (!IsEnabledStopMeasurement())
                 return;
-            this.Cmd.ValueT.Bit07_StartStop = false;
+            Cmd.ValueT.Bit07_StartStop = true;
+            //if (this.ApplicationManager != null)
+            //{
+            //    this.ApplicationManager.ApplicationQueue.Add(() =>
+            //    {
+            //        ToggleBits();
+            //    });
+            //}
             _LastStop = DateTime.Now;
         }
 
         public virtual bool IsEnabledStopMeasurement()
         {
-            return Cmd != null && Status != null;
+            return Cmd != null 
+                && Status != null 
+                && Status.ValueT.Bit04_MeasurementRun
+                && !Cmd.ValueT.Bit07_StartStop
+                && (DateTime.Now - _LastStop).TotalSeconds > MaxResponseWaitingTime;
         }
 
         public virtual void SendProductNo(UInt16 productNo)
@@ -609,6 +654,21 @@ namespace tews.mes.processapplication
         {
             Cmd.ValueT.Bit06_AckAlarm = true;
             base.AcknowledgeAlarms();
+        }
+
+        int _TogglePauseCounter = 0;
+        public void ToggleBits()
+        {
+            if (_TogglePauseCounter < 2)
+            {
+                _TogglePauseCounter++;
+                return;
+            }
+            _TogglePauseCounter = 0;
+            if (Cmd.ValueT.Bit07_StartStop)
+                Cmd.ValueT.Bit07_StartStop = false;
+            if (Cmd.ValueT.Bit06_AckAlarm)
+                Cmd.ValueT.Bit06_AckAlarm = false;
         }
 
         #endregion
