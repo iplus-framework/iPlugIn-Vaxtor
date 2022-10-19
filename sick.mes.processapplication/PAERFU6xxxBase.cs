@@ -29,6 +29,13 @@ namespace sick.mes.processapplication
         {
         }
 
+        public override bool ACInit(Global.ACStartTypes startChildMode = Global.ACStartTypes.Automatic)
+        {
+            bool result = base.ACInit(startChildMode);
+            ReadRfids.ValueT = new string[] { };
+            return result;
+        }
+
         public override bool ACPostInit()
         {
             if (PollingInterval <= 0)

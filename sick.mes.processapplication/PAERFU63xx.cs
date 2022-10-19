@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace sick.mes.processapplication
 {
+    //[ACSerializeableInfo(new Type[] { typeof(ACPropertyValueEvent<string[]>) })]
     [ACClassInfo(Const.PackName_VarioAutomation, "en{'Sick RFID 63xx}de{'Sick RFID 63xx'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required, false, true)]
     public class PAERFU63xx : PAERFU6xxxBase
     {
