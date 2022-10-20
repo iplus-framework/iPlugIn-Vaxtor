@@ -1,0 +1,730 @@
+﻿using gip.core.autocomponent;
+using gip.core.datamodel;
+using gip.core.processapplication;
+using gip.mes.processapplication;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace soehnle.mes.processapplication
+{
+    [ACClassInfo(Const.PackName_VarioAutomation, "en{'Scale Terminal 30xx'}de{'Waage Terminal 30xx'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required, false, true)]
+    public class PAETerminal30xx : PAEScaleCalibratable
+    {
+        #region c'tors
+        static PAETerminal30xx()
+        {
+            RegisterExecuteHandler(typeof(PAETerminal30xx), HandleExecuteACMethod_PAETerminal30xx);
+        }
+
+
+        public PAETerminal30xx(ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "") : 
+               base(acType, content, parentACObject, parameter, acIdentifier)
+        {
+        }
+
+        public override bool ACPostInit()
+        {
+            OpenPort();
+            //if (CurrentScaleMode == PAScaleMode.ReadingWeights)
+            //{
+            CurrentScaleMode = PAScaleMode.Off;
+            StartReadWeightData();
+            //}
+
+            if (PollingInterval <= 0)
+                PollingInterval = 2000;
+            if (ACOperationMode == ACOperationModes.Live)
+            {
+                _ShutdownEvent = new ManualResetEvent(false);
+                _PollThread = new ACThread(Poll);
+                _PollThread.Name = "ACUrl:" + this.GetACUrl() + ";Poll();";
+                _PollThread.Start();
+            }
+
+            return base.ACPostInit();
+        }
+
+        public override bool ACDeInit(bool deleteACClassTask = false)
+        {
+            if (_PollThread != null)
+            {
+                if (_ShutdownEvent != null && _ShutdownEvent.SafeWaitHandle != null && !_ShutdownEvent.SafeWaitHandle.IsClosed)
+                    _ShutdownEvent.Set();
+                if (!_PollThread.Join(5000))
+                    _PollThread.Abort();
+                _PollThread = null;
+            }
+            ClosePort();
+            return base.ACDeInit(deleteACClassTask);
+        }
+
+        public new const string ClassName = "PAETerminal30xx";
+        #endregion
+
+
+        #region Const
+        //public const string SwitchOffTerminal = "<K002K>";
+
+        #endregion
+
+        #region Enums
+        public enum PAScaleMode : short
+        {
+            Off = 0,
+            Idle = 5,
+            ReadingWeights = 10,
+            AlibiWeighing = 20,
+        }
+        #endregion
+
+        #region Properties
+
+        [ACPropertyInfo(true, 400, "Config", "en{'Polling [ms]'}de{'Abfragezyklus [ms]'}", DefaultValue = 500)]
+        public int PollingInterval { get; set; }
+
+        [ACPropertyInfo(true, 401, "Config", "en{'Communication on'}de{'Kommunikation ein'}", DefaultValue = false)]
+        public bool TCPCommEnabled { get; set; }
+
+        protected TcpClient _tcpClient = null;
+        [ACPropertyInfo(9999)]
+        public TcpClient TcpClient
+        {
+            get { return _tcpClient; }
+        }
+
+        protected readonly ACMonitorObject _61000_LockPort = new ACMonitorObject(61000);
+
+        /// <summary>
+        /// TODO: Configuration-Property
+        /// </summary>
+        [ACPropertyInfo(true, 402, "Config", "en{'IP-Address'}de{'IP-Adresse'}", DefaultValue = "192.168.100.1")]
+        public string ServerIPV4Address { get; set; }
+
+        [ACPropertyInfo(true, 403, "Config", "en{'DNS-Name [ms]'}de{'DNS-Name [ms]'}")]
+        public string ServerDNSName { get; set; }
+
+        /// <summary>
+        /// TODO: Configuration-Property
+        /// </summary>
+        [ACPropertyInfo(true, 404, "Config", "en{'Port-No.'}de{'Port-Nr.'}", DefaultValue = (int)23)]
+        public int PortNo { get; set; }
+
+
+        /// <summary>
+        /// TODO: Configuration-Property
+        /// </summary>
+        [ACPropertyInfo(true, 405)]
+        public int ReceiveTimeout { get; set; }
+
+        /// <summary>
+        /// TODO: Configuration-Property
+        /// </summary>
+        [ACPropertyInfo(true, 406)]
+        public int SendTimeout { get; set; }
+
+        public IACContainerTNet<bool> _IsConnected = null;
+        [ACPropertyBindingSource]
+        public IACContainerTNet<bool> IsConnected
+        {
+            get
+            {
+                return _IsConnected;
+            }
+            set
+            {
+                _IsConnected = value;
+            }
+        }
+
+        [ACPropertyBindingSource(407, "", "en{'Scale mode'}de{'Modus Waage'}", "", false, true)]
+        public IACContainerTNet<short> ScaleMode { get; set; }
+
+        public PAScaleMode CurrentScaleMode
+        {
+            get
+            {
+                return (PAScaleMode)ScaleMode.ValueT;
+            }
+            set
+            {
+                ScaleMode.ValueT = (short)value;
+            }
+        }
+
+        private int _CountWrites = 0;
+        private int _CountReads = 0;
+        private DateTime _LastWrite = DateTime.Now;
+
+        [ACPropertyBindingSource(9999, "", "en{'Last weight'}de{'Letztes Gewicht'}")]
+        public IACContainerTNet<string> LastWeight { get; set; }
+
+        [ACPropertyBindingSource(9999, "Error", "en{'Communication alarm'}de{'Communication-Alarm'}", "", false, false)]
+        public IACContainerTNet<PANotifyState> CommAlarm { get; set; }
+
+
+        #endregion
+
+        #region Methods
+
+        #region Thread
+        protected ManualResetEvent _ShutdownEvent;
+        ACThread _PollThread;
+        private void Poll()
+        {
+            try
+            {
+                while (!_ShutdownEvent.WaitOne(PollingInterval, false))
+                {
+                    _PollThread.StartReportingExeTime();
+                    if (CurrentScaleMode == PAScaleMode.ReadingWeights)
+                    {
+                        using (ACMonitor.Lock(_61000_LockPort))
+                        {
+                            if (this.TcpClient == null || !this.TcpClient.Connected)
+                                OpenPort();
+                            if (this.TcpClient != null && IsConnected.ValueT)
+                                ReadWeightData();
+                        }
+                    }
+                    TestAndReconnect();
+                    _PollThread.StopReportingExeTime();
+                }
+            }
+            catch (ThreadAbortException ec)
+            {
+                string msg = ec.Message;
+                if (ec.InnerException != null && ec.InnerException.Message != null)
+                    msg += ec.InnerException.Message;
+
+                Root.Messages.LogException("PAETerminal30xx", "Poll", msg);
+            }
+        }
+        #endregion
+
+        #region Connection
+        [ACMethodInteraction("Comm", "en{'Open Connection'}de{'Öffne Verbindung'}", 200, true)]
+        public void OpenPort()
+        {
+            if (!IsEnabledOpenPort())
+            {
+                IsConnected.ValueT = this.TcpClient != null && this.TcpClient.Connected;
+                return;
+            }
+            //if (_tcpClient == null)
+            _tcpClient = new System.Net.Sockets.TcpClient();
+            using (ACMonitor.Lock(_61000_LockPort))
+            {
+                if (this.SendTimeout > 0)
+                    _tcpClient.SendTimeout = this.SendTimeout;
+                if (this.ReceiveTimeout > 0)
+                    _tcpClient.ReceiveTimeout = this.ReceiveTimeout;
+
+                try
+                {
+                    if (!this.TcpClient.Connected)
+                    {
+                        if (!String.IsNullOrEmpty(this.ServerIPV4Address))
+                        {
+                            IPAddress ipAddress = IPAddress.Parse(this.ServerIPV4Address);
+                            this.TcpClient.Connect(ipAddress, PortNo);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    CommAlarm.ValueT = PANotifyState.AlarmOrFault;
+                    if (IsAlarmActive("CommAlarm", e.Message) == null)
+                        this.Root.Messages.LogException(GetACUrl(), "PAETerminal30xx.OpenPort()", e.Message);
+                    OnNewAlarmOccurred(CommAlarm, e.Message, true);
+                }
+                IsConnected.ValueT = this.TcpClient.Connected;
+            }
+        }
+
+        public bool IsEnabledOpenPort()
+        {
+            if (!TCPCommEnabled || (ACOperationMode != ACOperationModes.Live))
+                return false;
+            if (this.TcpClient == null)
+            {
+                if (String.IsNullOrEmpty(this.ServerIPV4Address) && String.IsNullOrEmpty(this.ServerDNSName))
+                    return false;
+                return true;
+            }
+            return !this.TcpClient.Connected;
+        }
+
+        [ACMethodInteraction("Comm", "en{'Close Connection'}de{'Schliesse Verbindung'}", 201, true)]
+        public void ClosePort()
+        {
+            if (!IsEnabledClosePort())
+                return;
+            if (this.TcpClient != null)
+            {
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    if (this.TcpClient.Connected)
+                        this.TcpClient.Close();
+                    _tcpClient.Dispose();
+                    _tcpClient = null;
+                }
+            }
+            IsConnected.ValueT = false;
+        }
+
+        public bool IsEnabledClosePort()
+        {
+            if (this.TcpClient == null)
+                return false;
+            return this.TcpClient.Connected;
+        }
+
+        int _WaitForReconnect = 0;
+        private int WaitForReconnect
+        {
+            get
+            {
+                if(_WaitForReconnect == 0)
+                {
+                    if (PollingInterval > 10000)
+                        _WaitForReconnect = 1;
+                    else
+                        _WaitForReconnect = 10000 / PollingInterval;
+
+                }
+                return _WaitForReconnect;
+            }
+        }
+
+        DateTime _LastReconnectTest = DateTime.Now;
+
+        protected void TestAndReconnect()
+        {
+            if ((DateTime.Now - _LastReconnectTest) < TimeSpan.FromSeconds(30))
+                return;
+
+            _LastReconnectTest = DateTime.Now;
+
+            if (TestConnection())
+            {
+                AcknowledgeAlarms();
+                return;
+            }
+
+            IsConnected.ValueT = false;
+
+            Msg msg = new Msg(eMsgLevel.Error, "Connection lost to the Terminal 3010!");
+            CommAlarm.ValueT = PANotifyState.AlarmOrFault;
+            OnNewAlarmOccurred(CommAlarm, msg, true);
+            if (IsAlarmActive(CommAlarm, msg.Message) == null)
+                Messages.LogMessageMsg(msg);
+        }
+        #endregion
+
+        #region Polling WeightData
+        [ACMethodInteraction("Comm", "en{'Start reading weights'}de{'Starte Gewichtsdaten lesen'}", 202, true)]
+        public void StartReadWeightData()
+        {
+            if (!IsEnabledStartReadWeightData())
+                return;
+            try
+            {
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream stream = this.TcpClient.GetStream();
+                    if (stream == null || !stream.CanWrite)
+                        return;
+                    //<F> Send value continuously
+                    stream.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
+                    _LastWrite = DateTime.Now;
+
+                    CurrentScaleMode = PAScaleMode.ReadingWeights;
+                    _CountWrites++;
+                }
+            }
+            catch (Exception e)
+            {
+                CommAlarm.ValueT = PANotifyState.AlarmOrFault;
+                if (IsAlarmActive("CommAlarm", e.Message) == null)
+                    this.Root.Messages.LogException(GetACUrl(), "PAETerminal.StartReadWeightData()", e.Message);
+                OnNewAlarmOccurred(CommAlarm, e.Message, true);
+
+                IsConnected.ValueT = this.TcpClient.Connected;
+            }
+        }
+
+        public bool IsEnabledStartReadWeightData()
+        {
+            if (!IsEnabledClosePort())
+                return false;
+            return CurrentScaleMode != PAScaleMode.ReadingWeights;
+        }
+
+        [ACMethodInteraction("Comm", "en{'Stop reading weights'}de{'Stoppe Gewichtsdaten lesen'}", 203, true)]
+        public void StopReadWeightData()
+        {
+            if (!IsEnabledStopReadWeightData())
+                return;
+            try
+            {
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream stream = this.TcpClient.GetStream();
+                    if (stream == null || !stream.CanWrite)
+                        return;
+                    if ((DateTime.Now - _LastWrite).TotalSeconds < 1)
+                        Thread.Sleep(1000);
+
+                    // <A> Send value x1 immediately
+                    stream.Write(Cmd3xxx.GetValueOneTime, 0, Cmd3xxx.C_CmdLength);
+                    _LastWrite = DateTime.Now;
+
+                    CurrentScaleMode = PAScaleMode.Idle;
+                    _CountWrites++;
+                }
+            }
+            catch (Exception e)
+            {
+                CommAlarm.ValueT = PANotifyState.AlarmOrFault;
+                if (IsAlarmActive("CommAlarm", e.Message) == null)
+                    this.Root.Messages.LogException(GetACUrl(), "PAETerminal30xx.StopReadWeightData()", e.Message);
+                OnNewAlarmOccurred(CommAlarm, e.Message, true);
+                IsConnected.ValueT = this.TcpClient.Connected;
+            }
+        }
+
+        public bool IsEnabledStopReadWeightData()
+        {
+            if (!IsEnabledClosePort())
+                return false;
+            return CurrentScaleMode == PAScaleMode.ReadingWeights;
+        }
+
+
+        protected void ReadWeightData()
+        {
+            if (!IsEnabledStopReadWeightData())
+                return;
+            try
+            {
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream stream = this.TcpClient.GetStream();
+                    if (stream == null)
+                        return;
+                    _CountReads++;
+                    if (stream.CanRead && stream.DataAvailable)
+                    {
+                        byte[] myReadBuffer = new byte[1024];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
+                        do
+                        {
+                            numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                        }
+                        while (stream.DataAvailable);
+
+                        String readResult = myCompleteMessage.ToString();
+                        if (!String.IsNullOrEmpty(readResult))
+                        {
+                            OnReadWeightDataDone(readResult);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                CommAlarm.ValueT = PANotifyState.AlarmOrFault;
+                if (IsAlarmActive("CommAlarm", e.Message) == null)
+                    this.Root.Messages.LogException(GetACUrl(), "PAETerminal30xx.ReadWeightData()", e.Message);
+                OnNewAlarmOccurred(CommAlarm, e.Message, true);
+                if (this.TcpClient == null || !this.TcpClient.Connected)
+                    OpenPort();
+                IsConnected.ValueT = this.TcpClient.Connected;
+            }
+        }
+
+        protected virtual void OnReadWeightDataDone(String readResult)
+        {
+            Tele3xxxEDV tele3XxxEDV = new Tele3xxxEDV(readResult);
+            if (tele3XxxEDV.InvalidWeight)
+            {
+                Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnReadWeightDataDone(10)", 504, "Error50306");
+                OnNewAlarmOccurred(StateScale, msg, true);
+                if (IsAlarmActive(StateScale, msg.Message) == null)
+                    Messages.LogMessageMsg(msg);
+                Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnReadWeightDataDone(10a)", "String to parse:" + readResult);
+            }
+            else
+                ActualValue.ValueT = tele3XxxEDV.WeightKg;
+        }
+
+        private bool IsStatusOk(string readResult)
+        {
+            //Underload
+            //string statusString = readResult.Substring(0, 1);
+            //int status = 0;
+            //if (!int.TryParse(statusString, out status))
+            //{
+            //    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "IsStatusOk", 539, "Error50307");
+            //    OnNewAlarmOccurred(StateScale, msg, true);
+            //    if (IsAlarmActive(StateScale, msg.Message) == null)
+            //        Messages.LogMessageMsg(msg);
+            //    return false;
+            //}
+
+            //if (status > 0)
+            //{
+            //    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "IsStatusOk", 548, "Error50309");
+            //    OnNewAlarmOccurred(StateScale, msg, true);
+            //    if (IsAlarmActive(StateScale, msg.Message) == null)
+            //        Messages.LogMessageMsg(msg);
+            //    return false;
+            //}
+
+            //Overload
+            //statusString = readResult.Substring(1, 1);
+            //if (!int.TryParse(statusString, out status))
+            //{
+            //    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "IsStatusOk", 559, "Error50307");
+            //    OnNewAlarmOccurred(StateScale, msg, true);
+            //    if (IsAlarmActive(StateScale, msg.Message) == null)
+            //        Messages.LogMessageMsg(msg);
+            //    return false;
+            //}
+
+            //if (status > 0)
+            //{
+            //    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "IsStatusOk", 548, "Error50308");
+            //    OnNewAlarmOccurred(StateScale, msg, true);
+            //    if (IsAlarmActive(StateScale, msg.Message) == null)
+            //        Messages.LogMessageMsg(msg);
+            //    return false;
+            //}
+
+            return true;
+        }
+
+        #endregion
+
+        public override Msg OnRegisterAlibiWeight(IACObject parentPos)
+        {
+            try
+            {
+                if (!ApplicationManager.IsSimulationOn)
+                {
+                    string reply = SendCmdReadResponse(Cmd3xxx.C_GetValueOneTimeStill);  // Model 3010 Needs a <H> Cmd instead of <B>
+                    //string reply = SendCommand(Cmd3xxx.C_GetValueOneTimeStillWithAlibi);  // Model 3010 Needs a <H> Cmd instead of <B>
+                    string alibiResult = null;
+                    double alibiWeight = ActualWeight.ValueT;
+
+                    StartReadWeightData();
+
+                    Msg msgParse = OnParseAlibiResult(reply, out alibiResult, out alibiWeight);
+                    if(string.IsNullOrEmpty(alibiResult))
+                    {
+                        Msg msg = new Msg(eMsgLevel.Error, "The alibi weighing is not registred or the scale response is wrong!");
+                        OnNewAlarmOccurred(StateScale, msg, true);
+                        if (IsAlarmActive(StateScale, msg.Message) == null)
+                            Messages.LogMessageMsg(msg);
+                        Messages.LogMessage(eMsgLevel.Error, this.GetACUrl(), "OnRegisterAlibiWeight(10a)", "String to parse:" + reply);
+                        return msg;
+                    }
+                    AlibiNo.ValueT = alibiResult;
+                    AlibiWeight.ValueT = alibiWeight;
+                }
+                else
+                {
+                    Random rnd = new Random();
+                    AlibiNo.ValueT = "Alibi" + rnd.Next();
+                    AlibiWeight.ValueT = rnd.NextDouble();
+                }
+                return null;
+            }
+            catch(Exception e)
+            {
+                Msg msg = new Msg("Terminal 30xx Alibi Error: " + e.Message, this, eMsgLevel.Exception, ClassName, "OnRegisterAlibiWeigh", 596);
+                Messages.LogMessageMsg(msg);
+                return msg;
+            }
+        }
+
+        public Msg OnParseAlibiResult(string replyFromScale, out string alibiNo, out double alibiWeight)
+        {
+            alibiNo = null;
+            alibiWeight = 0;
+
+            if (string.IsNullOrEmpty(replyFromScale))
+                return new Msg(eMsgLevel.Error, "The reply from scale is null or empty!");
+
+            try
+            {
+                Tele3xxxAlibi tele3XxxEDV = new Tele3xxxAlibi(replyFromScale);
+                alibiNo = tele3XxxEDV.AlibiNumber;
+                alibiWeight = tele3XxxEDV.WeightKg;
+            }
+            catch (Exception ex)
+            {
+                return new Msg(eMsgLevel.Exception, ex.Message);
+            }
+
+            return null;
+        }
+
+        public string SendCmdReadResponse(string command)
+        {
+            if (string.IsNullOrEmpty(command))
+                return null;
+
+            bool wasOpen = IsConnected.ValueT;
+            if (!IsConnected.ValueT)
+            {
+                OpenPort();
+                if (!IsConnected.ValueT)
+                    throw new Exception("Can not open TCP/IP-Port");
+            }
+            PAScaleMode lastScaleMode = CurrentScaleMode;
+            if (lastScaleMode == PAScaleMode.ReadingWeights)
+                StopReadWeightData();
+
+            using (ACMonitor.Lock(_61000_LockPort))
+            {
+                NetworkStream stream = this.TcpClient.GetStream();
+                if (stream == null || !stream.CanWrite)
+                    throw new Exception("Can't write to Stream");
+
+                if ((DateTime.Now - _LastWrite).TotalSeconds < 1)
+                    Thread.Sleep(1000);
+
+                byte[] data = Encoding.ASCII.GetBytes(command);
+                stream.Write(data, 0, data.Length);
+                _LastWrite = DateTime.Now;
+
+                Thread.Sleep(500);
+
+                byte[] myReadBuffer = new byte[1024];
+                StringBuilder myCompleteMessage = new StringBuilder();
+                int numberOfBytesRead = 0;
+                do
+                {
+                    numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                    myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                }
+                while (stream.DataAvailable);
+                string readResult = myCompleteMessage.ToString();
+                return readResult;
+            }
+        }
+
+        public bool TestConnection()
+        {
+            bool wasOpen = IsConnected.ValueT;
+            if (!IsConnected.ValueT)
+            {
+                OpenPort();
+                if (!IsConnected.ValueT)
+                    return false;
+            }
+            PAScaleMode lastScaleMode = CurrentScaleMode;
+            if (lastScaleMode == PAScaleMode.ReadingWeights)
+                StopReadWeightData();
+
+            string readResult = null;
+
+            try
+            {
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream stream = this.TcpClient.GetStream();
+                    if (stream == null || !stream.CanWrite)
+                        throw new Exception("Can't write to Stream");
+
+                    stream.Write(Cmd3xxx.GetValueAllTime, 0, Cmd3xxx.C_CmdLength);
+                    _LastWrite = DateTime.Now;
+
+                    Thread.Sleep(50);
+
+                    byte[] myReadBuffer = new byte[1024];
+                    StringBuilder myCompleteMessage = new StringBuilder();
+                    int numberOfBytesRead = 0;
+                    do
+                    {
+                        numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                        myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                    }
+                    while (stream.DataAvailable);
+                    readResult = myCompleteMessage.ToString();
+                }
+            }
+            catch (Exception e)
+            {
+                Messages.LogException(this.GetACUrl(), "TestConnection", e);
+                return false;
+            }
+
+            StartReadWeightData();
+            return !string.IsNullOrEmpty(readResult);
+        }
+
+        public override void AcknowledgeAlarms()
+        {
+            if (!IsEnabledAcknowledgeAlarms())
+                return;
+            if (CommAlarm.ValueT == PANotifyState.AlarmOrFault)
+            {
+                CommAlarm.ValueT = PANotifyState.Off;
+                OnAlarmDisappeared(CommAlarm);
+            }
+            base.AcknowledgeAlarms();
+        }
+
+        #region Helper-Methods
+        public static bool HandleExecuteACMethod_PAETerminal30xx(out object result, IACComponent acComponent, string acMethodName, ACClassMethod acClassMethod, object[] acParameter)
+        {
+            return HandleExecuteACMethod_PAEScaleCalibratable(out result, acComponent, acMethodName, acClassMethod, acParameter);
+        }
+
+        protected override bool HandleExecuteACMethod(out object result, AsyncMethodInvocationMode invocationMode, string acMethodName, gip.core.datamodel.ACClassMethod acClassMethod, params object[] acParameter)
+        {
+            result = null;
+            switch (acMethodName)
+            {
+                case "OpenPort":
+                    OpenPort();
+                    return true;
+                case "IsEnabledOpenPort":
+                    result = IsEnabledOpenPort();
+                    return true;
+                case "ClosePort":
+                    ClosePort();
+                    return true;
+                case "IsEnabledClosePort":
+                    result = IsEnabledClosePort();
+                    return true;
+                case "StartReadWeightData":
+                    StartReadWeightData();
+                    return true;
+                case "IsEnabledStartReadWeightData":
+                    result = IsEnabledStartReadWeightData();
+                    return true;
+                case "StopReadWeightData":
+                    StopReadWeightData();
+                    return true;
+                case "IsEnabledStopReadWeightData":
+                    result = IsEnabledStopReadWeightData();
+                    return true;
+            }
+            return base.HandleExecuteACMethod(out result, invocationMode, acMethodName, acClassMethod, acParameter);
+        }
+        #endregion
+
+        #endregion
+    }
+}
