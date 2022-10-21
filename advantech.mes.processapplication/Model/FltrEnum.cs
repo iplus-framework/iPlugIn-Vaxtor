@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace advantech.mes.processapplication
 {
-    public class Wise4000Data
+    public enum FltrEnum : int
     {
-        public LogMsg[] LogMsg { get;set;}
+        NoFilter,
+        TimeFilter,
+        AmountFilter
     }
 }
