@@ -24,10 +24,11 @@ namespace advantech.mes.processapplication
         {
             _StoreRecivedData = new ACPropertyConfigValue<bool>(this, "StoreRecivedData", false);
             _ExportDir = new ACPropertyConfigValue<string>(this, "ExportDir", "");
-            _FileName = new ACPropertyConfigValue<string>(this, "FileName", "advantec_{0:yyyyMMddHHmmssfff}");
+            _FileName = new ACPropertyConfigValue<string>(this, "FileName", "advantec_{0:yyyyMMddHHmmssfff}.json");
             _SensorMinCountValue = new ACPropertyConfigValue<int>(this, "SensorMinCountValue", 30000);
             _LogOutputUrl = new ACPropertyConfigValue<string>(this, "LogOutputUrl", "log_output");
             _LogMessageUrl = new ACPropertyConfigValue<string>(this, "LogMessageUrl", "log_message");
+            _LogClearUrl = new ACPropertyConfigValue<string>(this, "LogClearUrl", "control");
         }
 
         public override bool ACInit(Global.ACStartTypes startChildMode = Global.ACStartTypes.Automatic)
@@ -40,6 +41,7 @@ namespace advantech.mes.processapplication
             _ = SensorMinCountValue;
             _ = LogOutputUrl;
             _ = LogMessageUrl;
+            _ = LogClearUrl;
 
             return baseResult;
         }
@@ -132,6 +134,20 @@ namespace advantech.mes.processapplication
             }
         }
 
+        private ACPropertyConfigValue<string> _LogClearUrl;
+        [ACPropertyConfig("LogClearUrl")]
+        public string LogClearUrl
+        {
+            get
+            {
+                return _LogClearUrl.ValueT;
+            }
+            set
+            {
+                _LogClearUrl.ValueT = value;
+            }
+        }
+
         #endregion
 
         #region Properties
@@ -204,16 +220,23 @@ namespace advantech.mes.processapplication
         {
             if (!IsEnabledResetCounter())
                 return null;
-            bool success = true;
+            bool success = false;
 
+            FilterClear filter = new FilterClear();
+            string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
+            using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
+            {
+                WSResponse<string> response = this.Client.Patch<string>(content, LogClearUrl);
 
+                if(response.Suceeded)
+                {
+                    success = true;
+
+                    
+                }
+            }
 
             IsResetCounterSuccessfully = success;
-            //WSResponse<string> response = this.Client.Get(C_StopOrderString);
-            //if (!response.Suceeded)
-            //    return false;
-            //IsRecording.ValueT = false;
-            //PWSampleNode = null;
             return new WSResponse<bool> { Data = true };
         }
 
@@ -387,6 +410,18 @@ namespace advantech.mes.processapplication
                     && !Client.ConnectionDisabled;
         }
 
+
+        #endregion
+
+        #region Test
+
+        [ACMethodInteraction("", "en{'OnlyRead'}de{'OnlyRead'}", 250, true)]
+        public WSResponse<Wise4000Data> OnlyRead()
+        {
+            WSResponse<Wise4000Data> wSResponse = new WSResponse<Wise4000Data>();
+            wSResponse = Client.Get<Wise4000Data>(LogMessageUrl);
+            return wSResponse;
+        }
 
         #endregion
     }

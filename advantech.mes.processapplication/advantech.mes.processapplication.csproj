@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Filter.cs" />
+    <Compile Include="Model\FilterClear.cs" />
     <Compile Include="Model\FltrEnum.cs" />
     <Compile Include="Model\LogMsg.cs" />
     <Compile Include="Model\Wise4000Data.cs" />
