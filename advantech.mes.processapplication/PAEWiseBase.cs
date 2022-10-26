@@ -35,6 +35,12 @@ namespace advantech.mes.processapplication
         {
             bool baseResult = base.ACInit(startChildMode);
 
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                _DelegateQueue = new ACDelegateQueue(this.GetACUrl());
+            }
+            _DelegateQueue.StartWorkerThread();
+
             _ = StoreRecivedData;
             _ = ExportDir;
             _ = FileName;
@@ -44,6 +50,19 @@ namespace advantech.mes.processapplication
             _ = LogClearUrl;
 
             return baseResult;
+        }
+
+        public override bool ACDeInit(bool deleteACClassTask = false)
+        {
+            bool baseDeinit = base.ACDeInit(deleteACClassTask);
+
+            _DelegateQueue.StopWorkerThread();
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                _DelegateQueue = null;
+            }
+
+            return baseDeinit;
         }
 
         #endregion
@@ -150,6 +169,13 @@ namespace advantech.mes.processapplication
 
         #endregion
 
+        #region Binding properties
+
+        [ACPropertyBindingTarget(100, "ActualValue", "en{'Actual Value'}de{'Actual Value'}", "", false, true)]
+        public IACContainerTNet<Double> ActualValue { get; set; }
+
+        #endregion
+
         #region Properties
 
         private JsonSerializerSettings _DefaultJsonSerializerSettings;
@@ -209,30 +235,55 @@ namespace advantech.mes.processapplication
             }
         }
 
+        private ACDelegateQueue _DelegateQueue = null;
+        public ACDelegateQueue DelegateQueue
+        {
+            get
+            {
+
+                using (ACMonitor.Lock(_20015_LockValue))
+                {
+                    return _DelegateQueue;
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
 
         #region Methods -> ACMethod
 
-        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
+
+        [ACMethodInteraction("ResetCounterA", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 200, true)]
+        public void ResetCounterA()
+        {
+            DelegateQueue.Add(() => { ResetCounter(); });
+        }
+
+        public bool IsEnabledResetCounterA()
+        {
+            return IsEnabledResetCounter();
+        }
+
+
+        [ACMethodInteraction("ResetCounter", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
         public WSResponse<bool> ResetCounter()
         {
             if (!IsEnabledResetCounter())
                 return null;
             bool success = false;
-
+            IsResetCounterSuccessfully = null;
             FilterClear filter = new FilterClear();
             string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
             using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
             {
                 WSResponse<string> response = this.Client.Patch<string>(content, LogClearUrl);
 
-                if(response.Suceeded)
+                if (response.Suceeded)
                 {
                     success = true;
-
-                    
+                    ActualValue.ValueT = 0;
                 }
             }
 
@@ -246,7 +297,20 @@ namespace advantech.mes.processapplication
             return CanSend();
         }
 
-        [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 203, true)]
+        [ACMethodInteraction("ReadCounterA", "en{'Count'}de{'Zählen'}", 203, true)]
+        public void ReadCounterA()
+        {
+            IsResetCounterSuccessfully = true;
+            DelegateQueue.Add(() => { ReadCounter(); });
+        }
+
+        public bool IsEnabledReadCounterA()
+        {
+            return CanSend();
+        }
+
+
+        [ACMethodInteraction("ReadCounter", "en{'Count'}de{'Zählen'}", 203, true)]
         public WSResponse<int> ReadCounter()
         {
             WSResponse<int> result = new WSResponse<int>();
@@ -257,7 +321,8 @@ namespace advantech.mes.processapplication
             if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
             {
                 result.Data = CountData(dataResult.Data);
-                if(StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                ActualValue.ValueT = result.Data;
+                if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
                 {
                     ExportData(ExportDir, FileName, dataResult.Data);
                 }
@@ -271,6 +336,12 @@ namespace advantech.mes.processapplication
             return result;
         }
 
+        public bool IsEnabledReadCounter()
+        {
+
+            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
+        }
+
         public virtual void ExportData(string exportDir, string fileName, Wise4000Data data)
         {
             try
@@ -280,17 +351,13 @@ namespace advantech.mes.processapplication
                 string json = JsonConvert.SerializeObject(data);
                 File.WriteAllText(json, fullFileName);
             }
-            catch(Exception ec)
+            catch (Exception ec)
             {
                 Messages.LogException(GetACUrl(), "ExportData(10)", ec);
-            } 
+            }
         }
 
-        public bool IsEnabledReadCounter()
-        {
-
-            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
-        }
+       
 
 
         #endregion
