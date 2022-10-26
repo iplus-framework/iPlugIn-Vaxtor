@@ -363,8 +363,20 @@ namespace systec.mes.processapplication
 
             switch(acMethodName)
             {
-                case "ReadBruttoWeight":
+                case nameof(ReadBruttoWeight):
                     result = ReadBruttoWeight();
+                    return true;
+                case nameof(OpenPort):
+                    OpenPort();
+                    return true;
+                case nameof(IsEnabledOpenPort):
+                    result = IsEnabledOpenPort();
+                    return true;
+                case nameof(ClosePort):
+                    ClosePort();
+                    return true;
+                case nameof(IsEnabledClosePort):
+                    result = IsEnabledClosePort();
                     return true;
             }
 
