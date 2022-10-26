@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -48,6 +49,12 @@ namespace advantech.mes.processapplication
             _ = LogOutputUrl;
             _ = LogMessageUrl;
             _ = LogClearUrl;
+
+            if (!CanSend())
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 56, null);
+            }
 
             return baseResult;
         }
@@ -174,6 +181,12 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingTarget(100, "ActualValue", "en{'Actual Value'}de{'Actual Value'}", "", false, true)]
         public IACContainerTNet<Double> ActualValue { get; set; }
 
+        [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, false)]
+        public IACContainerTNet<PANotifyState> IsReadingCounterAlarm { get; set; }
+
+        [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", true, false)]
+        public IACContainerTNet<string> ErrorText { get; set; }
+
         #endregion
 
         #region Properties
@@ -255,23 +268,17 @@ namespace advantech.mes.processapplication
         #region Methods -> ACMethod
 
 
-        [ACMethodInteraction("ResetCounterA", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 200, true)]
-        public void ResetCounterA()
-        {
-            DelegateQueue.Add(() => { ResetCounter(); });
-        }
-
-        public bool IsEnabledResetCounterA()
-        {
-            return IsEnabledResetCounter();
-        }
-
-
         [ACMethodInteraction("ResetCounter", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
-        public WSResponse<bool> ResetCounter()
+        public void ResetCounter()
         {
+            ErrorText = null;
             if (!IsEnabledResetCounter())
-                return null;
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 276, null);
+                return;
+            }
+
             bool success = false;
             IsResetCounterSuccessfully = null;
             FilterClear filter = new FilterClear();
@@ -285,38 +292,34 @@ namespace advantech.mes.processapplication
                     success = true;
                     ActualValue.ValueT = 0;
                 }
+                else
+                {
+                    // Error50574
+                    // Error by resetting counter! Error {0}.
+                    LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 276, response.Message?.Message);
+                }
             }
 
             IsResetCounterSuccessfully = success;
-            return new WSResponse<bool> { Data = true };
-        }
 
+        }
 
         public bool IsEnabledResetCounter()
         {
             return CanSend();
         }
 
-        [ACMethodInteraction("ReadCounterA", "en{'Count'}de{'Zählen'}", 203, true)]
-        public void ReadCounterA()
-        {
-            IsResetCounterSuccessfully = true;
-            DelegateQueue.Add(() => { ReadCounter(); });
-        }
-
-        public bool IsEnabledReadCounterA()
-        {
-            return CanSend();
-        }
-
-
         [ACMethodInteraction("ReadCounter", "en{'Count'}de{'Zählen'}", 203, true)]
-        public WSResponse<int> ReadCounter()
+        public void ReadCounter()
         {
+            ErrorText = null;
             WSResponse<int> result = new WSResponse<int>();
             if (!IsEnabledReadCounter())
-                return result;
-
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 324, null);
+            }
+            
             WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
             if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
             {
@@ -329,11 +332,12 @@ namespace advantech.mes.processapplication
             }
             else
             {
-                result.Message = dataResult.Message;
+                // Error50575
+                // rror by reading counter! Error {0}.
+                LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 342, dataResult.Message?.Message);
             }
 
             IsResetCounterSuccessfully = null;
-            return result;
         }
 
         public bool IsEnabledReadCounter()
@@ -356,9 +360,6 @@ namespace advantech.mes.processapplication
                 Messages.LogException(GetACUrl(), "ExportData(10)", ec);
             }
         }
-
-       
-
 
         #endregion
 
@@ -477,19 +478,17 @@ namespace advantech.mes.processapplication
                     && !Client.ConnectionDisabled;
         }
 
-
-        #endregion
-
-        #region Test
-
-        [ACMethodInteraction("", "en{'OnlyRead'}de{'OnlyRead'}", 250, true)]
-        public WSResponse<Wise4000Data> OnlyRead()
+        public Msg LogMessage(eMsgLevel level, string translationID, string methodName, int linie, params object[] parameter)
         {
-            WSResponse<Wise4000Data> wSResponse = new WSResponse<Wise4000Data>();
-            wSResponse = Client.Get<Wise4000Data>(LogMessageUrl);
-            return wSResponse;
+            Msg msg = new Msg(this, eMsgLevel.Exception, this.ACType.ACIdentifier, methodName, linie, translationID, parameter);
+            IsReadingCounterAlarm.ValueT = PANotifyState.AlarmOrFault;
+            ErrorText.ValueT = msg.Message;
+            Messages.LogWarning(this.GetACUrl(), nameof(PAEWiseBase), ErrorText.ValueT);
+            OnNewAlarmOccurred(IsReadingCounterAlarm, msg, true);
+            return msg;
         }
 
         #endregion
+
     }
 }
