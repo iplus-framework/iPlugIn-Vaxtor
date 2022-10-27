@@ -187,6 +187,9 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", false, true)]
         public IACContainerTNet<string> ErrorText { get; set; }
 
+        [ACPropertyBindingSource(212, "Semaphore", "en{'Semaphore'}de{'Semaphore'}", "", false, true)]
+        public IACContainerTNet<SemaphoreEnum> Semaphore { get; set; }
+
         #endregion
 
         #region Properties
@@ -272,13 +275,15 @@ namespace advantech.mes.processapplication
         public void ResetCounter()
         {
             ErrorText.ValueT = null;
+            Semaphore.ValueT = SemaphoreEnum.None;
             if (!IsEnabledResetCounter())
             {
                 // [Error50573] ACRestClient not available!
                 LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 276, null);
+                Semaphore.ValueT = SemaphoreEnum.Red;
                 return;
             }
-
+            Semaphore.ValueT = SemaphoreEnum.Yellow;
             bool success = false;
             IsResetCounterSuccessfully = null;
             FilterClear filter = new FilterClear();
@@ -291,11 +296,13 @@ namespace advantech.mes.processapplication
                 {
                     success = true;
                     ActualValue.ValueT = 0;
+                    Semaphore.ValueT = SemaphoreEnum.Green;
                 }
                 else
                 {
                     // Error50574
                     // Error by resetting counter! Error {0}.
+                    Semaphore.ValueT = SemaphoreEnum.Red;
                     LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 276, response.Message?.Message);
                 }
             }
@@ -311,18 +318,21 @@ namespace advantech.mes.processapplication
         public void ReadCounter()
         {
             ErrorText.ValueT = null;
+            Semaphore.ValueT = SemaphoreEnum.None;
             WSResponse<int> result = new WSResponse<int>();
             if (!IsEnabledReadCounter())
             {
                 // [Error50573] ACRestClient not available!
+                Semaphore.ValueT = SemaphoreEnum.Red;
                 LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 324, null);
             }
-            
+            Semaphore.ValueT = SemaphoreEnum.Yellow;
             WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
             if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
             {
                 result.Data = CountData(dataResult.Data);
                 ActualValue.ValueT = result.Data;
+                Semaphore.ValueT = SemaphoreEnum.Green;
                 if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
                 {
                     ExportData(ExportDir, FileName, dataResult.Data);
@@ -332,6 +342,7 @@ namespace advantech.mes.processapplication
             {
                 // Error50575
                 // rror by reading counter! Error {0}.
+                Semaphore.ValueT = SemaphoreEnum.Red;
                 LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 342, dataResult.Message?.Message);
             }
 
