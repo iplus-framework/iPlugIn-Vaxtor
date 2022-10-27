@@ -55,6 +55,10 @@ namespace systec.mes.processapplication
             set;
         }
 
+        public override string ToString()
+        {
+            return String.Format("BruttoWeight={0}; UniqueIdentifierNo={1}, ErrorMessage={2}, Date={3}, Time={4}", BruttoWeight, UniqueIdentifierNo, ErrorMessage, Date, Time);
+        }
     }
 
 }

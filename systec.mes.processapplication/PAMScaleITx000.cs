@@ -1,5 +1,6 @@
 ﻿using gip.core.autocomponent;
 using gip.core.datamodel;
+using gip.core.processapplication;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace systec.mes.processapplication
 {
     //TODO: Implement logic for continuos scale reading (separate thread)
     [ACClassInfo(Const.PackName_VarioAutomation, "en{'PAMScaleITx000 TCP'}de{'PAMScaleITx000 TCP'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required, false, true)]
-    public class PAMScaleITx000 : PAModule
+    public class PAMScaleITx000 : PAEScaleGravimetric
     {
         #region c'tors
         public PAMScaleITx000(ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "")
@@ -305,8 +306,8 @@ namespace systec.mes.processapplication
                     ClosePort();
                     LastWeight.ValueT = Math.Abs(weight).ToString();
                     ITx000Result itResult = new ITx000Result(weight, eichNr.ToString(), eichNrError);
-                    itResult.Date = readResult.Substring(3, 8);
-                    itResult.Time = readResult.Substring(11, 5);
+                    itResult.Date = readResult.Substring(5, 8);
+                    itResult.Time = readResult.Substring(13, 5);
                     return itResult;
                 }
                 else
@@ -341,7 +342,23 @@ namespace systec.mes.processapplication
             return 10;
         }
 
-        [ACMethodInfo("", "en{'Read brutto weight'}de{'Brutto-Gewicht lesen'}", 999, true)]
+        [ACMethodInteraction("", "en{'Read brutto weight'}de{'Brutto-Gewicht lesen'}", 200, true)]
+        public void ReadBruttoWeightInt()
+        {
+            ITx000Result result = ReadBruttoWeight();
+            if (result != null)
+            {
+                this.ActualValue.ValueT = result.BruttoWeight;
+                Messages.LogDebug(this.GetACUrl(), "ReadBruttoWeightInt()", result.ToString());
+            }
+        }
+
+        public bool IsEnabledReadBruttoWeightInt()
+        {
+            return TCPCommEnabled;
+        }
+
+        [ACMethodInfo("", "en{'Read brutto weight'}de{'Brutto-Gewicht lesen'}", 201, true)]
         public ITx000Result ReadBruttoWeight()
         {
             try
@@ -366,8 +383,14 @@ namespace systec.mes.processapplication
                 case nameof(ReadBruttoWeight):
                     result = ReadBruttoWeight();
                     return true;
+                case nameof(IsEnabledReadBruttoWeightInt):
+                    result = IsEnabledReadBruttoWeightInt();
+                    return true;
                 case nameof(OpenPort):
                     OpenPort();
+                    return true;
+                case nameof(ReadBruttoWeightInt):
+                    ReadBruttoWeightInt();
                     return true;
                 case nameof(IsEnabledOpenPort):
                     result = IsEnabledOpenPort();
