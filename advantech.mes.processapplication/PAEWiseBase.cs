@@ -181,10 +181,10 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingTarget(100, "ActualValue", "en{'Actual Value'}de{'Actual Value'}", "", false, true)]
         public IACContainerTNet<Double> ActualValue { get; set; }
 
-        [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, false)]
+        [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, true)]
         public IACContainerTNet<PANotifyState> IsReadingCounterAlarm { get; set; }
 
-        [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", true, false)]
+        [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", false, true)]
         public IACContainerTNet<string> ErrorText { get; set; }
 
         #endregion
@@ -271,7 +271,7 @@ namespace advantech.mes.processapplication
         [ACMethodInteraction("ResetCounter", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
         public void ResetCounter()
         {
-            ErrorText = null;
+            ErrorText.ValueT = null;
             if (!IsEnabledResetCounter())
             {
                 // [Error50573] ACRestClient not available!
@@ -299,9 +299,7 @@ namespace advantech.mes.processapplication
                     LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 276, response.Message?.Message);
                 }
             }
-
             IsResetCounterSuccessfully = success;
-
         }
 
         public bool IsEnabledResetCounter()
@@ -312,7 +310,7 @@ namespace advantech.mes.processapplication
         [ACMethodInteraction("ReadCounter", "en{'Count'}de{'Zählen'}", 203, true)]
         public void ReadCounter()
         {
-            ErrorText = null;
+            ErrorText.ValueT = null;
             WSResponse<int> result = new WSResponse<int>();
             if (!IsEnabledReadCounter())
             {
@@ -353,7 +351,7 @@ namespace advantech.mes.processapplication
                 string file = string.Format(fileName, DateTime.Now);
                 string fullFileName = Path.Combine(exportDir, file);
                 string json = JsonConvert.SerializeObject(data);
-                File.WriteAllText(json, fullFileName);
+                File.WriteAllText(fullFileName, json);
             }
             catch (Exception ec)
             {
@@ -483,7 +481,7 @@ namespace advantech.mes.processapplication
             Msg msg = new Msg(this, eMsgLevel.Exception, this.ACType.ACIdentifier, methodName, linie, translationID, parameter);
             IsReadingCounterAlarm.ValueT = PANotifyState.AlarmOrFault;
             ErrorText.ValueT = msg.Message;
-            Messages.LogWarning(this.GetACUrl(), nameof(PAEWiseBase), ErrorText.ValueT);
+            Messages.LogWarning(this.GetACUrl(), nameof(PAEWiseBase), msg.Message);
             OnNewAlarmOccurred(IsReadingCounterAlarm, msg, true);
             return msg;
         }
