@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -35,6 +36,12 @@ namespace advantech.mes.processapplication
         {
             bool baseResult = base.ACInit(startChildMode);
 
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                _DelegateQueue = new ACDelegateQueue(this.GetACUrl());
+            }
+            _DelegateQueue.StartWorkerThread();
+
             _ = StoreRecivedData;
             _ = ExportDir;
             _ = FileName;
@@ -43,7 +50,26 @@ namespace advantech.mes.processapplication
             _ = LogMessageUrl;
             _ = LogClearUrl;
 
+            if (!CanSend())
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 56, null);
+            }
+
             return baseResult;
+        }
+
+        public override bool ACDeInit(bool deleteACClassTask = false)
+        {
+            bool baseDeinit = base.ACDeInit(deleteACClassTask);
+
+            _DelegateQueue.StopWorkerThread();
+            using (ACMonitor.Lock(_20015_LockValue))
+            {
+                _DelegateQueue = null;
+            }
+
+            return baseDeinit;
         }
 
         #endregion
@@ -150,6 +176,19 @@ namespace advantech.mes.processapplication
 
         #endregion
 
+        #region Binding properties
+
+        [ACPropertyBindingTarget(100, "ActualValue", "en{'Actual Value'}de{'Actual Value'}", "", false, true)]
+        public IACContainerTNet<Double> ActualValue { get; set; }
+
+        [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, false)]
+        public IACContainerTNet<PANotifyState> IsReadingCounterAlarm { get; set; }
+
+        [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", true, false)]
+        public IACContainerTNet<string> ErrorText { get; set; }
+
+        #endregion
+
         #region Properties
 
         private JsonSerializerSettings _DefaultJsonSerializerSettings;
@@ -209,66 +248,102 @@ namespace advantech.mes.processapplication
             }
         }
 
+        private ACDelegateQueue _DelegateQueue = null;
+        public ACDelegateQueue DelegateQueue
+        {
+            get
+            {
+
+                using (ACMonitor.Lock(_20015_LockValue))
+                {
+                    return _DelegateQueue;
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
 
         #region Methods -> ACMethod
 
-        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
-        public WSResponse<bool> ResetCounter()
-        {
-            if (!IsEnabledResetCounter())
-                return null;
-            bool success = false;
 
+        [ACMethodInteraction("ResetCounter", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
+        public void ResetCounter()
+        {
+            ErrorText = null;
+            if (!IsEnabledResetCounter())
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 276, null);
+                return;
+            }
+
+            bool success = false;
+            IsResetCounterSuccessfully = null;
             FilterClear filter = new FilterClear();
             string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
             using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
             {
                 WSResponse<string> response = this.Client.Patch<string>(content, LogClearUrl);
 
-                if(response.Suceeded)
+                if (response.Suceeded)
                 {
                     success = true;
-
-                    
+                    ActualValue.ValueT = 0;
+                }
+                else
+                {
+                    // Error50574
+                    // Error by resetting counter! Error {0}.
+                    LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 276, response.Message?.Message);
                 }
             }
 
             IsResetCounterSuccessfully = success;
-            return new WSResponse<bool> { Data = true };
-        }
 
+        }
 
         public bool IsEnabledResetCounter()
         {
             return CanSend();
         }
 
-        [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 203, true)]
-        public WSResponse<int> ReadCounter()
+        [ACMethodInteraction("ReadCounter", "en{'Count'}de{'Zählen'}", 203, true)]
+        public void ReadCounter()
         {
+            ErrorText = null;
             WSResponse<int> result = new WSResponse<int>();
             if (!IsEnabledReadCounter())
-                return result;
-
+            {
+                // [Error50573] ACRestClient not available!
+                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 324, null);
+            }
+            
             WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
             if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
             {
                 result.Data = CountData(dataResult.Data);
-                if(StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                ActualValue.ValueT = result.Data;
+                if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
                 {
                     ExportData(ExportDir, FileName, dataResult.Data);
                 }
             }
             else
             {
-                result.Message = dataResult.Message;
+                // Error50575
+                // rror by reading counter! Error {0}.
+                LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 342, dataResult.Message?.Message);
             }
 
             IsResetCounterSuccessfully = null;
-            return result;
+        }
+
+        public bool IsEnabledReadCounter()
+        {
+
+            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
         }
 
         public virtual void ExportData(string exportDir, string fileName, Wise4000Data data)
@@ -280,18 +355,11 @@ namespace advantech.mes.processapplication
                 string json = JsonConvert.SerializeObject(data);
                 File.WriteAllText(json, fullFileName);
             }
-            catch(Exception ec)
+            catch (Exception ec)
             {
                 Messages.LogException(GetACUrl(), "ExportData(10)", ec);
-            } 
+            }
         }
-
-        public bool IsEnabledReadCounter()
-        {
-
-            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
-        }
-
 
         #endregion
 
@@ -410,19 +478,17 @@ namespace advantech.mes.processapplication
                     && !Client.ConnectionDisabled;
         }
 
-
-        #endregion
-
-        #region Test
-
-        [ACMethodInteraction("", "en{'OnlyRead'}de{'OnlyRead'}", 250, true)]
-        public WSResponse<Wise4000Data> OnlyRead()
+        public Msg LogMessage(eMsgLevel level, string translationID, string methodName, int linie, params object[] parameter)
         {
-            WSResponse<Wise4000Data> wSResponse = new WSResponse<Wise4000Data>();
-            wSResponse = Client.Get<Wise4000Data>(LogMessageUrl);
-            return wSResponse;
+            Msg msg = new Msg(this, eMsgLevel.Exception, this.ACType.ACIdentifier, methodName, linie, translationID, parameter);
+            IsReadingCounterAlarm.ValueT = PANotifyState.AlarmOrFault;
+            ErrorText.ValueT = msg.Message;
+            Messages.LogWarning(this.GetACUrl(), nameof(PAEWiseBase), ErrorText.ValueT);
+            OnNewAlarmOccurred(IsReadingCounterAlarm, msg, true);
+            return msg;
         }
 
         #endregion
+
     }
 }
