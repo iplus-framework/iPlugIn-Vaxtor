@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\ChannelResult.cs" />
     <Compile Include="Model\Filter.cs" />
     <Compile Include="Model\FilterClear.cs" />
     <Compile Include="Model\FltrEnum.cs" />

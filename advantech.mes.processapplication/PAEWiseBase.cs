@@ -180,13 +180,14 @@ namespace advantech.mes.processapplication
 
         #region Binding properties
 
-
         [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, true)]
         public IACContainerTNet<PANotifyState> IsReadingCounterAlarm { get; set; }
 
         [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", false, true)]
         public IACContainerTNet<string> ErrorText { get; set; }
 
+        [ACPropertyBindingSource(212, "MeasureText", "en{'Measure'}de{'Messen'}", "", false, true)]
+        public IACContainerTNet<string> MeasureText { get; set; }
 
         #endregion
 
@@ -280,10 +281,12 @@ namespace advantech.mes.processapplication
             return CanSend();
         }
 
-        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 203, true)]
+        [ACMethodInfo("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 203, true)]
         public bool ResetCounter()
         {
             ErrorText.ValueT = null;
+            MeasureText.ValueT = null;
+
             if (!IsEnabledResetCounter())
             {
                 // [Error50573] ACRestClient not available!
@@ -322,21 +325,24 @@ namespace advantech.mes.processapplication
         [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 302, true)]
         public void Read()
         {
-            if(!IsEnabledRead())
+            IsResetCounterSuccessfully = true;
+            if (!IsEnabledRead())
                 return;
             ReadCounter();
         }
 
         public bool IsEnabledRead()
         {
-            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
+            return CanSend();
         }
 
         [ACMethodInfo("", "en{'Count'}de{'Zählen'}", 303, true)]
-        public Dictionary<int, int> ReadCounter()
+        public List<ChannelResult> ReadCounter()
         {
             ErrorText.ValueT = null;
-            Dictionary<int, int> result = null;
+            MeasureText.ValueT = null;
+
+            List <ChannelResult> result = null;
             if (!IsEnabledReadCounter())
             {
                 // [Error50573] ACRestClient not available!
@@ -351,6 +357,9 @@ namespace advantech.mes.processapplication
                 {
                     ExportData(ExportDir, FileName, dataResult.Data);
                 }
+
+                string json = JsonConvert.SerializeObject(result);
+                MeasureText.ValueT = json;
             }
             else
             {
@@ -360,9 +369,10 @@ namespace advantech.mes.processapplication
             }
 
             IsResetCounterSuccessfully = null;
+
             return result;
         }
-        
+
         public bool IsEnabledReadCounter()
         {
             return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
@@ -427,7 +437,7 @@ namespace advantech.mes.processapplication
         {
             WSResponse<Wise4000Data> result = new WSResponse<Wise4000Data>();
             WSResponse<long?> amountResult = GetAmount(logOutputUrl);
-            if (amountResult.Data != null && amountResult.Data > 0)
+            if (amountResult.Data != null)
             {
                 Filter filter = new Filter();
                 filter.FltrEnum = FltrEnum.AmountFilter;
@@ -465,10 +475,9 @@ namespace advantech.mes.processapplication
             return result;
         }
 
-        public Dictionary<int, int> CountData(Wise4000Data data)
+        public List<ChannelResult> CountData(Wise4000Data data)
         {
-            Dictionary<int, int> result = new Dictionary<int, int>();
-            int count = 0;
+            List<ChannelResult> result = new List<ChannelResult>();
             if (data.LogMsg != null)
             {
                 foreach (LogMsg logMsg in data.LogMsg)
@@ -479,18 +488,22 @@ namespace advantech.mes.processapplication
                         {
                             if (entry.Length == 4)
                             {
-                                int chanell = entry[1];
+                                int channel = entry[1];
                                 int measureValue = entry[3];
 
                                 if (measureValue > SensorMinCountValue)
                                 {
-                                    if (!result.Keys.Contains(chanell))
+                                    ChannelResult channelResult = result.Where(c => c.Channel == channel).FirstOrDefault();
+                                    if (channelResult == null)
                                     {
-                                        result.Add(chanell, 1);
+                                        channelResult = new ChannelResult();
+                                        channelResult.Channel = channel;
+                                        channelResult.Count = 1;
+                                        result.Add(channelResult);
                                     }
                                     else
                                     {
-                                        result[chanell] += 1;
+                                        channelResult.Count += 1;
                                     }
                                 }
                             }
