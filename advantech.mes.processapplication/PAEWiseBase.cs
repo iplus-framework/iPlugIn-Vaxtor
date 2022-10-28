@@ -3,6 +3,7 @@ using gip.core.communication;
 using gip.core.datamodel;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,6 +12,7 @@ using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 
 namespace advantech.mes.processapplication
 {
@@ -178,8 +180,6 @@ namespace advantech.mes.processapplication
 
         #region Binding properties
 
-        [ACPropertyBindingTarget(100, "ActualValue", "en{'Actual Value'}de{'Actual Value'}", "", false, true)]
-        public IACContainerTNet<Double> ActualValue { get; set; }
 
         [ACPropertyBindingSource(210, "Error", "en{'Reading Counter Alarm'}de{'Reading Counter Alarm'}", "", false, true)]
         public IACContainerTNet<PANotifyState> IsReadingCounterAlarm { get; set; }
@@ -187,8 +187,6 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingSource(211, "Error", "en{'Error-text'}de{'Fehlertext'}", "", false, true)]
         public IACContainerTNet<string> ErrorText { get; set; }
 
-        [ACPropertyBindingSource(212, "Semaphore", "en{'Semaphore'}de{'Semaphore'}", "", false, true)]
-        public IACContainerTNet<SemaphoreEnum> Semaphore { get; set; }
 
         #endregion
 
@@ -271,19 +269,27 @@ namespace advantech.mes.processapplication
         #region Methods -> ACMethod
 
 
-        [ACMethodInteraction("ResetCounter", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
-        public void ResetCounter()
+        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 202, true)]
+        public void Reset()
+        {
+            ResetCounter();
+        }
+
+        public bool IsEnabledReset()
+        {
+            return CanSend();
+        }
+
+        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 203, true)]
+        public bool ResetCounter()
         {
             ErrorText.ValueT = null;
-            Semaphore.ValueT = SemaphoreEnum.None;
             if (!IsEnabledResetCounter())
             {
                 // [Error50573] ACRestClient not available!
                 LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 276, null);
-                Semaphore.ValueT = SemaphoreEnum.Red;
-                return;
+                return false;
             }
-            Semaphore.ValueT = SemaphoreEnum.Yellow;
             bool success = false;
             IsResetCounterSuccessfully = null;
             FilterClear filter = new FilterClear();
@@ -295,18 +301,16 @@ namespace advantech.mes.processapplication
                 if (response.Suceeded)
                 {
                     success = true;
-                    ActualValue.ValueT = 0;
-                    Semaphore.ValueT = SemaphoreEnum.Green;
                 }
                 else
                 {
                     // Error50574
                     // Error by resetting counter! Error {0}.
-                    Semaphore.ValueT = SemaphoreEnum.Red;
                     LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 276, response.Message?.Message);
                 }
             }
             IsResetCounterSuccessfully = success;
+            return success;
         }
 
         public bool IsEnabledResetCounter()
@@ -314,25 +318,35 @@ namespace advantech.mes.processapplication
             return CanSend();
         }
 
-        [ACMethodInteraction("ReadCounter", "en{'Count'}de{'Zählen'}", 203, true)]
-        public void ReadCounter()
+
+        [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 302, true)]
+        public void Read()
+        {
+            if(!IsEnabledRead())
+                return;
+            ReadCounter();
+        }
+
+        public bool IsEnabledRead()
+        {
+            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
+        }
+
+        [ACMethodInfo("", "en{'Count'}de{'Zählen'}", 303, true)]
+        public Dictionary<int, int> ReadCounter()
         {
             ErrorText.ValueT = null;
-            Semaphore.ValueT = SemaphoreEnum.None;
-            WSResponse<int> result = new WSResponse<int>();
+            Dictionary<int, int> result = null;
             if (!IsEnabledReadCounter())
             {
                 // [Error50573] ACRestClient not available!
-                Semaphore.ValueT = SemaphoreEnum.Red;
                 LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 324, null);
+                return result;
             }
-            Semaphore.ValueT = SemaphoreEnum.Yellow;
             WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
             if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
             {
-                result.Data = CountData(dataResult.Data);
-                ActualValue.ValueT = result.Data;
-                Semaphore.ValueT = SemaphoreEnum.Green;
+                result = CountData(dataResult.Data);
                 if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
                 {
                     ExportData(ExportDir, FileName, dataResult.Data);
@@ -342,16 +356,15 @@ namespace advantech.mes.processapplication
             {
                 // Error50575
                 // rror by reading counter! Error {0}.
-                Semaphore.ValueT = SemaphoreEnum.Red;
                 LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 342, dataResult.Message?.Message);
             }
 
             IsResetCounterSuccessfully = null;
+            return result;
         }
-
+        
         public bool IsEnabledReadCounter()
         {
-
             return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
         }
 
@@ -441,6 +454,10 @@ namespace advantech.mes.processapplication
                     }
                 }
             }
+            else if (amountResult.Data != null)
+            {
+                result.Data = new Wise4000Data() { LogMsg = new LogMsg[] { } };
+            }
             else
             {
                 result.Message = amountResult.Message;
@@ -448,8 +465,9 @@ namespace advantech.mes.processapplication
             return result;
         }
 
-        public int CountData(Wise4000Data data)
+        public Dictionary<int, int> CountData(Wise4000Data data)
         {
+            Dictionary<int, int> result = new Dictionary<int, int>();
             int count = 0;
             if (data.LogMsg != null)
             {
@@ -459,11 +477,21 @@ namespace advantech.mes.processapplication
                     {
                         foreach (int[] entry in logMsg.Record)
                         {
-                            foreach (int subEntry in entry)
+                            if (entry.Length == 4)
                             {
-                                if (subEntry > SensorMinCountValue)
+                                int chanell = entry[1];
+                                int measureValue = entry[3];
+
+                                if (measureValue > SensorMinCountValue)
                                 {
-                                    count++;
+                                    if (!result.Keys.Contains(chanell))
+                                    {
+                                        result.Add(chanell, 1);
+                                    }
+                                    else
+                                    {
+                                        result[chanell] += 1;
+                                    }
                                 }
                             }
                         }
@@ -471,7 +499,7 @@ namespace advantech.mes.processapplication
                 }
             }
 
-            return count;
+            return result;
         }
 
         #endregion
