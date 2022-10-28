@@ -72,7 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VBControlScripts\2022-10-26 16-59_aagincic.zip">
+    <None Include="VBControlScripts\2022-10-28 10-42_aagincic.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
