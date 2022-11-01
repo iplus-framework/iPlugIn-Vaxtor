@@ -42,7 +42,7 @@ namespace kse.mes.processapplication
         #region Read-Values from PLC
 
 
-        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false, RemotePropID=25)]
+        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false)]
         public IACContainerTNet<ContDisAlarmCode> AlarmCode { get; set; }
         protected IACPropertyNetTarget _AlarmCode
         {
@@ -57,31 +57,31 @@ namespace kse.mes.processapplication
         }
 
 
-        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false, RemotePropID=26)]
+        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false)]
         public IACContainerTNet<UInt16> AlarmReference { get; set; }
 
-        [ACPropertyBindingTarget(105, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false, RemotePropID=27)]
+        [ACPropertyBindingTarget(105, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false)]
         public IACContainerTNet<ContDisAction> ActionResponse { get; set; }
 
-        [ACPropertyBindingTarget(106, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false, RemotePropID=28)]
+        [ACPropertyBindingTarget(106, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerNr { get; set; }
 
-        [ACPropertyBindingTarget(107, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false, RemotePropID=29)]
+        [ACPropertyBindingTarget(107, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerCode { get; set; }
 
-        [ACPropertyBindingTarget(108, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false, RemotePropID=30)]
+        [ACPropertyBindingTarget(108, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false)]
         public IACContainerTNet<Int32> GrossWeight { get; set; }
 
-        [ACPropertyBindingTarget(110, "NetWeight", "en{'NetWeight'}de{'NetWeight'}", "", false, false, RemotePropID=31)]
+        [ACPropertyBindingTarget(110, "NetWeight", "en{'NetWeight'}de{'NetWeight'}", "", false, false)]
         public IACContainerTNet<Int32> NetWeight { get; set; }
 
-        [ACPropertyBindingTarget(112, "DischargeNotReleased", "en{'DischargeNotReleased'}de{'DischargeNotReleased'}", "", false, false, RemotePropID=32)]
+        [ACPropertyBindingTarget(112, "DischargeNotReleased", "en{'DischargeNotReleased'}de{'DischargeNotReleased'}", "", false, false)]
         public IACContainerTNet<ContDisDischargeNotReleased> DischargeNotReleased { get; set; }
 
-        [ACPropertyBindingTarget(113, "DustDischarging", "en{'DustDischarging'}de{'DustDischarging'}", "", false, false, RemotePropID=33)]
+        [ACPropertyBindingTarget(113, "DustDischarging", "en{'DustDischarging'}de{'DustDischarging'}", "", false, false)]
         public IACContainerTNet<ContDisDustDischarging> DustDischarging { get; set; }
 
-        [ACPropertyBindingTarget(114, "DischargeReleasedExtern", "en{'DischargeReleasedExtern'}de{'DischargeReleasedExtern'}", "", false, false, RemotePropID=34)]
+        [ACPropertyBindingTarget(114, "DischargeReleasedExtern", "en{'DischargeReleasedExtern'}de{'DischargeReleasedExtern'}", "", false, false)]
         public IACContainerTNet<ContDisDischargeReleased> DischargeReleasedExtern { get; set; }
         protected IACPropertyNetTarget _DischargeReleasedExtern
         {
@@ -99,25 +99,25 @@ namespace kse.mes.processapplication
 
         #region Write-Values to PLC
 
-        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false, RemotePropID=35)]
+        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ResetAlarm { get; set; }
 
-        [ACPropertyBindingTarget(4, "ActionRequest", "en{'ActionRequest'}de{'ActionRequest'}", "", false, false, RemotePropID=36)]
+        [ACPropertyBindingTarget(4, "ActionRequest", "en{'ActionRequest'}de{'ActionRequest'}", "", false, false)]
         public IACContainerTNet<ContDisAction> ActionRequest { get; set; }
 
-        [ACPropertyBindingTarget(6, "ActivateVibrator", "en{'ActivateVibrator'}de{'ActivateVibrator'}", "", false, false, RemotePropID=37)]
+        [ACPropertyBindingTarget(6, "ActivateVibrator", "en{'ActivateVibrator'}de{'ActivateVibrator'}", "", false, false)]
         public IACContainerTNet<ContDisActivateVibrator> ActivateVibrator { get; set; }
 
-        [ACPropertyBindingTarget(7, "RequestPusher", "en{'RequestPusher'}de{'RequestPusher'}", "", false, false, RemotePropID=38)]
+        [ACPropertyBindingTarget(7, "RequestPusher", "en{'RequestPusher'}de{'RequestPusher'}", "", false, false)]
         public IACContainerTNet<ContDisRequestPusher> RequestPusher { get; set; }
 
-        [ACPropertyBindingTarget(8, "VibratorTime", "en{'VibratorTime'}de{'VibratorTime'}", "", false, false, RemotePropID=39)]
+        [ACPropertyBindingTarget(8, "VibratorTime", "en{'VibratorTime'}de{'VibratorTime'}", "", false, false)]
         public IACContainerTNet<UInt16> VibratorTime { get; set; }
 
-        [ACPropertyBindingTarget(9, "DischargeReleased", "en{'DischargeReleased'}de{'DischargeReleased'}", "", false, false, RemotePropID=40)]
+        [ACPropertyBindingTarget(9, "DischargeReleased", "en{'DischargeReleased'}de{'DischargeReleased'}", "", false, false)]
         public IACContainerTNet<ContDisDischargeReleased> DischargeReleased { get; set; }
 
-        [ACPropertyBindingTarget(10, "Destination", "en{'Destination GIP'}de{'Ziel GIP'}", "", false, false, RemotePropID=41)]
+        [ACPropertyBindingTarget(10, "Destination", "en{'Destination GIP'}de{'Ziel GIP'}", "", false, false)]
         public IACContainerTNet<UInt16> Destination { get; set; }
 
         #endregion

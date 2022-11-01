@@ -38,7 +38,7 @@ namespace kse.mes.processapplication
         #region Properties
 
         #region Read-Values from PLC
-        [ACPropertyBindingTarget(101, "Response", "en{'Response'}de{'Response'}", "", false, false, RemotePropID=14)]
+        [ACPropertyBindingTarget(101, "Response", "en{'Response'}de{'Response'}", "", false, false)]
         public IACContainerTNet<UInt16> Response { get; set; }
         protected IACPropertyNetTarget _Response
         {

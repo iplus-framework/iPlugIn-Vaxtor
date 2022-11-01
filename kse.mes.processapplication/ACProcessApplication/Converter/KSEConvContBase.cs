@@ -198,12 +198,12 @@ namespace kse.mes.processapplication
         }
 
         #region Read-Values from PLC
-        [ACPropertyBindingTarget(99, "IsReadyForWritingExtern", "en{'IsReadyForWritingExtern'}de{'IsReadyForWritingExtern'}", "", false, false, RemotePropID=17)]
+        [ACPropertyBindingTarget(99, "IsReadyForWritingExtern", "en{'IsReadyForWritingExtern'}de{'IsReadyForWritingExtern'}", "", false, false)]
         public IACContainerTNet<Boolean> IsReadyForWritingExtern { get; set; }
         [ACPropertyBindingSource(100, "Error", "en{'Function error'}de{'Funktionsfehler'}", "", false, false)]
         public IACContainerTNet<PANotifyState> FunctionError { get; set; }
 
-        [ACPropertyBindingTarget(101, "LifeSignalAcknowledge", "en{'LifeSignalAcknowledge'}de{'LifeSignalAcknowledge'}", "", false, false, RemotePropID=18)]
+        [ACPropertyBindingTarget(101, "LifeSignalAcknowledge", "en{'LifeSignalAcknowledge'}de{'LifeSignalAcknowledge'}", "", false, false)]
         public IACContainerTNet<UInt16> LifeSignalAcknowledge { get; set; }
         protected IACPropertyNetTarget LifeSignalAcknowledgeAsTargetProp
         {
@@ -217,7 +217,7 @@ namespace kse.mes.processapplication
             get { return LifeSignalAcknowledge.ValueT; }
         }
 
-        [ACPropertyBindingTarget(102, "Status", "en{'Status'}de{'Status'}", "", false, false, RemotePropID=19)]
+        [ACPropertyBindingTarget(102, "Status", "en{'Status'}de{'Status'}", "", false, false)]
         public IACContainerTNet<ContainerStatus> Status { get; set; }
         protected IACPropertyNetTarget StatusAsTargetProp
         {
@@ -235,7 +235,7 @@ namespace kse.mes.processapplication
 
         #region Write-Values from PLC
 
-        [ACPropertyBindingTarget(1, "LifeSignalRequest", "en{'LifeSignalRequest'}de{'LifeSignalRequest'}", "", false, false, RemotePropID=20)]
+        [ACPropertyBindingTarget(1, "LifeSignalRequest", "en{'LifeSignalRequest'}de{'LifeSignalRequest'}", "", false, false)]
         public IACContainerTNet<UInt16> LifeSignalRequest { get; set; }
         protected virtual IACPropertyNetTarget LifeSignalRequestAsTargetProp
         {
@@ -283,7 +283,7 @@ namespace kse.mes.processapplication
         }
 
 
-        [ACPropertyBindingTarget(2, "Command", "en{'Command'}de{'Command'}", "", false, false, RemotePropID=21)]
+        [ACPropertyBindingTarget(2, "Command", "en{'Command'}de{'Command'}", "", false, false)]
         public IACContainerTNet<ContainerCommand> Command { get; set; }
         protected virtual IACPropertyNetTarget CommandAsTargetProp
         {

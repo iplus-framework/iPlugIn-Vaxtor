@@ -39,7 +39,7 @@ namespace kse.mes.processapplication
 
         #region Read-Values from PLC
 
-        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false, RemotePropID=25)]
+        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false)]
         public IACContainerTNet<ContTranspAlarmCode> AlarmCode { get; set; }
         protected IACPropertyNetTarget _AlarmCode
         {
@@ -54,65 +54,65 @@ namespace kse.mes.processapplication
             get { return AlarmCode.ValueT; }
         }
 
-        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false, RemotePropID=26)]
+        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false)]
         public IACContainerTNet<UInt16> AlarmReference { get; set; }
 
-        [ACPropertyBindingTarget(105, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false, RemotePropID=27)]
+        [ACPropertyBindingTarget(105, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false)]
         public IACContainerTNet<ContTranspAction> ActionResponse { get; set; }
 
-        [ACPropertyBindingTarget(106, "RequiredPositionResponse", "en{'RequiredPositionResponse'}de{'RequiredPositionResponse'}", "", false, false, RemotePropID=28)]
+        [ACPropertyBindingTarget(106, "RequiredPositionResponse", "en{'RequiredPositionResponse'}de{'RequiredPositionResponse'}", "", false, false)]
         public IACContainerTNet<UInt16> RequiredPositionResponse { get; set; }
 
-        [ACPropertyBindingTarget(107, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false, RemotePropID=29)]
+        [ACPropertyBindingTarget(107, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerNr { get; set; }
 
-        [ACPropertyBindingTarget(108, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false, RemotePropID=30)]
+        [ACPropertyBindingTarget(108, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerCode { get; set; }
 
-        [ACPropertyBindingTarget(109, "LastPosition", "en{'LastPosition'}de{'LastPosition'}", "", false, false, RemotePropID=31)]
+        [ACPropertyBindingTarget(109, "LastPosition", "en{'LastPosition'}de{'LastPosition'}", "", false, false)]
         public IACContainerTNet<UInt16> LastPosition { get; set; }
 
-        [ACPropertyBindingTarget(110, "ActualPosition", "en{'ActualPosition'}de{'ActualPosition'}", "", false, false, RemotePropID=32)]
+        [ACPropertyBindingTarget(110, "ActualPosition", "en{'ActualPosition'}de{'ActualPosition'}", "", false, false)]
         public IACContainerTNet<UInt16> ActualPosition { get; set; }
 
-        [ACPropertyBindingTarget(111, "ActionPosition", "en{'ActionPosition'}de{'ActionPosition'}", "", false, false, RemotePropID=33)]
+        [ACPropertyBindingTarget(111, "ActionPosition", "en{'ActionPosition'}de{'ActionPosition'}", "", false, false)]
         public IACContainerTNet<UInt16> ActionPosition { get; set; }
 
-        [ACPropertyBindingTarget(112, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false, RemotePropID=34)]
+        [ACPropertyBindingTarget(112, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false)]
         public IACContainerTNet<Int32> GrossWeight { get; set; }
 
-        [ACPropertyBindingTarget(114, "WeighingPosition", "en{'WeighingPosition'}de{'WeighingPosition'}", "", false, false, RemotePropID=35)]
+        [ACPropertyBindingTarget(114, "WeighingPosition", "en{'WeighingPosition'}de{'WeighingPosition'}", "", false, false)]
         public IACContainerTNet<ContTranspWeighingPos> WeighingPosition { get; set; }
 
-        [ACPropertyBindingTarget(115, "InternalOrderActive", "en{'InternalOrderActive'}de{'InternalOrderActive'}", "", false, false, RemotePropID=36)]
+        [ACPropertyBindingTarget(115, "InternalOrderActive", "en{'InternalOrderActive'}de{'InternalOrderActive'}", "", false, false)]
         public IACContainerTNet<ContTranspInternalOrderActive> InternalOrderActive { get; set; }
 
         #endregion
 
         #region Write-Values to PLC
 
-        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false, RemotePropID=37)]
+        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ResetAlarm { get; set; }
 
-        [ACPropertyBindingTarget(4, "ActionRequest", "en{'Action'}de{'ActionRequest'}", "", false, false, RemotePropID=38)]
+        [ACPropertyBindingTarget(4, "ActionRequest", "en{'Action'}de{'ActionRequest'}", "", false, false)]
         public IACContainerTNet<ContTranspAction> ActionRequest { get; set; }
 
-        [ACPropertyBindingTarget(5, "RequiredPositionRequest", "en{'RequiredPositionRequest'}de{'RequiredPositionRequest'}", "", false, false, RemotePropID=39)]
+        [ACPropertyBindingTarget(5, "RequiredPositionRequest", "en{'RequiredPositionRequest'}de{'RequiredPositionRequest'}", "", false, false)]
         public IACContainerTNet<UInt16> RequiredPositionRequest { get; set; }
 
-        [ACPropertyBindingTarget(6, "OccupyId", "en{'OccupyId'}de{'OccupyId'}", "", false, false, RemotePropID=40)]
+        [ACPropertyBindingTarget(6, "OccupyId", "en{'OccupyId'}de{'OccupyId'}", "", false, false)]
         public IACContainerTNet<UInt16> OccupyId { get; set; }
 
-        [ACPropertyBindingTarget(7, "Release", "en{'Release'}de{'Release'}", "", false, false, RemotePropID=41)]
+        [ACPropertyBindingTarget(7, "Release", "en{'Release'}de{'Release'}", "", false, false)]
         public IACContainerTNet<ContTranspRelease> Release { get; set; }
 
-        [ACPropertyBindingTarget(8, "FillWeight", "en{'FillWeight'}de{'FillWeight'}", "", false, false, RemotePropID=42)]
+        [ACPropertyBindingTarget(8, "FillWeight", "en{'FillWeight'}de{'FillWeight'}", "", false, false)]
         public IACContainerTNet<Int32> FillWeight { get; set; }
 
-        [ACPropertyBindingTarget(10, "EmptyWeight", "en{'EmptyWeight'}de{'EmptyWeight'}", "", false, false, RemotePropID=43)]
+        [ACPropertyBindingTarget(10, "EmptyWeight", "en{'EmptyWeight'}de{'EmptyWeight'}", "", false, false)]
         public IACContainerTNet<Int32> EmptyWeight { get; set; }
 
-        [ACPropertyBindingTarget(11, "ContainerType", "en{'ContainerType'}de{'ContainerType'}", "", false, false, RemotePropID=44)]
+        [ACPropertyBindingTarget(11, "ContainerType", "en{'ContainerType'}de{'ContainerType'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerType { get; set; }
 
         #endregion

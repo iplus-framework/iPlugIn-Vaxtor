@@ -39,7 +39,7 @@ namespace kse.mes.processapplication
         #region Read-Values from PLC
 
 
-        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false, RemotePropID=25)]
+        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false)]
         public IACContainerTNet<ContServiceAlarmCode> AlarmCode { get; set; }
         protected IACPropertyNetTarget _AlarmCode
         {
@@ -54,26 +54,26 @@ namespace kse.mes.processapplication
         }
 
 
-        [ACPropertyBindingTarget(104, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false, RemotePropID=26)]
+        [ACPropertyBindingTarget(104, "ActionResponse", "en{'ActionResponse'}de{'ActionResponse'}", "", false, false)]
         public IACContainerTNet<ContServiceAction> ActionResponse { get; set; }
 
-        [ACPropertyBindingTarget(105, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false, RemotePropID=27)]
+        [ACPropertyBindingTarget(105, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerNr { get; set; }
 
-        [ACPropertyBindingTarget(106, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false, RemotePropID=28)]
+        [ACPropertyBindingTarget(106, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerCode { get; set; }
 
-        [ACPropertyBindingTarget(107, "InternalOrderActive", "en{'InternalOrderActive'}de{'InternalOrderActive'}", "", false, false, RemotePropID=29)]
+        [ACPropertyBindingTarget(107, "InternalOrderActive", "en{'InternalOrderActive'}de{'InternalOrderActive'}", "", false, false)]
         public IACContainerTNet<ContServiceInternalOrderActive> InternalOrderActive { get; set; }
 
         #endregion
 
         #region Write-Values to PLC
 
-        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false, RemotePropID=30)]
+        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ResetAlarm { get; set; }
 
-        [ACPropertyBindingTarget(4, "ActionRequest", "en{'ActionRequest'}de{'ActionRequest'}", "", false, false, RemotePropID=31)]
+        [ACPropertyBindingTarget(4, "ActionRequest", "en{'ActionRequest'}de{'ActionRequest'}", "", false, false)]
         public IACContainerTNet<ContServiceAction> ActionRequest { get; set; }
 
         #endregion

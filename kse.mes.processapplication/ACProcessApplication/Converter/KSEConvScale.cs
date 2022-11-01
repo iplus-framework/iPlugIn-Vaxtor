@@ -437,19 +437,19 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 4.2. COMMAND RESPONSE BLOCK, Holding-Register: 129
         /// </summary>
-        [ACPropertyBindingTarget(129, "CRBCommandNumber", "en{'Command-No. (129)'}de{'Kommando-Nr. (129)'}", "", false, false, RemotePropID = 43)]
+        [ACPropertyBindingTarget(129, "CRBCommandNumber", "en{'Command-No. (129)'}de{'Kommando-Nr. (129)'}", "", false, false)]
         public IACContainerTNet<UInt16> CRBCommandNumber { get; set; }
 
         /// <summary>
         /// 4.2. COMMAND RESPONSE BLOCK, Holding-Register: 130
         /// </summary>
-        [ACPropertyBindingTarget(130, "CRBCommandResponseCode", "en{'Start-Responsecode (Cmd. rsp. 130)'}de{'Start-Antwortcode (Cmd. rsp. 130)'}", "", false, false, RemotePropID = 44)]
+        [ACPropertyBindingTarget(130, "CRBCommandResponseCode", "en{'Start-Responsecode (Cmd. rsp. 130)'}de{'Start-Antwortcode (Cmd. rsp. 130)'}", "", false, false)]
         public IACContainerTNet<CRB_CommandResponseCode> CRBCommandResponseCode { get; set; }
 
         /// <summary>
         /// 4.2. COMMAND RESPONSE BLOCK, Holding-Register: 131
         /// </summary>
-        [ACPropertyBindingTarget(131, "CRBCommandAcknowledge", "en{'Start accepted (Cmd. Ack. 131)'}de{'Start angenommen (Cmd. Ack. 131)'}", "", false, false, RemotePropID = 45)]
+        [ACPropertyBindingTarget(131, "CRBCommandAcknowledge", "en{'Start accepted (Cmd. Ack. 131)'}de{'Start angenommen (Cmd. Ack. 131)'}", "", false, false)]
         public IACContainerTNet<CRB_CommandAcknowledge> CRBCommandAcknowledge { get; set; }
         #endregion
 
@@ -458,73 +458,73 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 101
         /// </summary>
-        [ACPropertyBindingTarget(101, "RBCommandNumber", "en{'Command-No. (101)'}de{'Kommando-Nr. (101)'}", "", false, false, RemotePropID = 18)]
+        [ACPropertyBindingTarget(101, "RBCommandNumber", "en{'Command-No. (101)'}de{'Kommando-Nr. (101)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBCommandNumber { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 102
         /// </summary>
-        [ACPropertyBindingTarget(102, "RBResultCode", "en{'Function (Res.Code 102)'}de{'Funktion (Res.Code 102)'}", "", false, false, RemotePropID = 19)]
+        [ACPropertyBindingTarget(102, "RBResultCode", "en{'Function (Res.Code 102)'}de{'Funktion (Res.Code 102)'}", "", false, false)]
         public IACContainerTNet<RB_ResultCode> RBResultCode { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 103
         /// </summary>
-        [ACPropertyBindingTarget(103, "RB_ProcessResultAlarmCode", "en{'Result Alarm (Alarmc. 103)'}de{'Ergebnis Alarm (Alarmc. 103)'}", "", false, false, RemotePropID = 20)]
+        [ACPropertyBindingTarget(103, "RB_ProcessResultAlarmCode", "en{'Result Alarm (Alarmc. 103)'}de{'Ergebnis Alarm (Alarmc. 103)'}", "", false, false)]
         public IACContainerTNet<RB_ProcessResultAlarmCode> RBProcessResultAlarmCode { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 104
         /// </summary>
-        [ACPropertyBindingTarget(104, "RBBinContNumber", "en{'Dosing-source (Bin-No. 104)'}de{'Dosierquelle (104)'}", "", false, false, RemotePropID = 21)]
+        [ACPropertyBindingTarget(104, "RBBinContNumber", "en{'Dosing-source (Bin-No. 104)'}de{'Dosierquelle (104)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBBinContNumber { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 105
         /// </summary>
-        [ACPropertyBindingTarget(105, "RBDischargePosition", "en{'Discharging position (105)'}de{'Entleerposition (105)'}", "", false, false, RemotePropID = 22)]
+        [ACPropertyBindingTarget(105, "RBDischargePosition", "en{'Discharging position (105)'}de{'Entleerposition (105)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBDischargePosition { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 106
         /// </summary>
-        [ACPropertyBindingTarget(106, "RBWeigherNumber", "en{'Weigher (106)'}de{'Waage. (106)'}", "", false, false, RemotePropID = 23)]
+        [ACPropertyBindingTarget(106, "RBWeigherNumber", "en{'Weigher (106)'}de{'Waage. (106)'}", "", false, false)]
         public IACContainerTNet<CB_WeigherNumber> RBWeigherNumber { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 107 + 108
         /// </summary>
-        [ACPropertyBindingTarget(107, "RBResultDosedWeight", "en{'Result-Quantity [g]  (107+8)'}de{'Istgewicht [g] (107+8)'}", "", false, false, RemotePropID = 24)]
+        [ACPropertyBindingTarget(107, "RBResultDosedWeight", "en{'Result-Quantity [g]  (107+8)'}de{'Istgewicht [g] (107+8)'}", "", false, false)]
         public IACContainerTNet<Int32> RBResultDosedWeight { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 109
         /// </summary>
-        [ACPropertyBindingTarget(109, "RBDosingTime", "en{'Dosing time [s] (109)'}de{'Dosierzeit [s] (109)'}", "", false, false, RemotePropID = 25)]
+        [ACPropertyBindingTarget(109, "RBDosingTime", "en{'Dosing time [s] (109)'}de{'Dosierzeit [s] (109)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBDosingTime { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 110
         /// </summary>
-        [ACPropertyBindingTarget(110, "RBPosition", "en{'Position (110)'}de{'Position (110)'}", "", false, false, RemotePropID = 26)]
+        [ACPropertyBindingTarget(110, "RBPosition", "en{'Position (110)'}de{'Position (110)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBPosition { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 111
         /// </summary>
-        [ACPropertyBindingTarget(111, "RBBatchID", "en{'Batch-ID (11)'}de{'Batch-ID (111)'}", "", false, false, RemotePropID = 27)]
+        [ACPropertyBindingTarget(111, "RBBatchID", "en{'Batch-ID (11)'}de{'Batch-ID (111)'}", "", false, false)]
         public IACContainerTNet<UInt16> RBBatchID { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 112
         /// </summary>
-        [ACPropertyBindingTarget(112, "RBAlarmHandlingCode", "en{'Alarm-Handling Code (112)'}de{'Alarm-Handling Code (112)'}", "", false, false, RemotePropID = 28)]
+        [ACPropertyBindingTarget(112, "RBAlarmHandlingCode", "en{'Alarm-Handling Code (112)'}de{'Alarm-Handling Code (112)'}", "", false, false)]
         public IACContainerTNet<RB_AlarmHandlingCode> RBAlarmHandlingCode { get; set; }
 
         /// <summary>
         /// 4.3. RESULT BLOCK, Holding-Register: 132, Handshake mit RRBResultAcknowledge
         /// </summary>
-        [ACPropertyBindingTarget(132, "RBResultValid", "en{'Read result (Res. valid 132)'}de{'Ergebnis lesen (Res. valid 132)'}", "", false, false, RemotePropID = 46)]
+        [ACPropertyBindingTarget(132, "RBResultValid", "en{'Read result (Res. valid 132)'}de{'Ergebnis lesen (Res. valid 132)'}", "", false, false)]
         public IACContainerTNet<RB_ResultValid> RBResultValid { get; set; }
         #endregion
 
@@ -533,136 +533,136 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 133
         /// </summary>
-        [ACPropertyBindingTarget(133, "ADMBMachineMode", "en{'Machine mode (133)'}de{'Betriebsart (Mach.-Mode 133)'}", "", false, false, RemotePropID = 47)]
+        [ACPropertyBindingTarget(133, "ADMBMachineMode", "en{'Machine mode (133)'}de{'Betriebsart (Mach.-Mode 133)'}", "", false, false)]
         public IACContainerTNet<ADMB_MachineMode> ADMBMachineMode { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 134
         /// </summary>
-        [ACPropertyBindingTarget(134, "ADMBMachineState", "en{'Machine state (134)'}de{'Maschinenstatus (134)'}", "", false, false, RemotePropID = 48)]
+        [ACPropertyBindingTarget(134, "ADMBMachineState", "en{'Machine state (134)'}de{'Maschinenstatus (134)'}", "", false, false)]
         public IACContainerTNet<ADMB_MachineState> ADMBMachineState { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 135
         /// </summary>
-        [ACPropertyBindingTarget(135, "RB_ProcessResultAlarmCode", "en{'Dosing-/Discharging process alarm (135)'}de{'Dosier-/Entleerprozessalarm (135)'}", "", false, false, RemotePropID = 49)]
+        [ACPropertyBindingTarget(135, "RB_ProcessResultAlarmCode", "en{'Dosing-/Discharging process alarm (135)'}de{'Dosier-/Entleerprozessalarm (135)'}", "", false, false)]
         public IACContainerTNet<RB_ProcessResultAlarmCode> ADMBDosingOrDischargingProcessAlarm { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 136
         /// </summary>
-        [ACPropertyBindingTarget(136, "RB_ProcessResultAlarmCode", "en{'Discharging Equipment Alarm (136)'}de{'Gerätealarm Entleeren (136)'}", "", false, false, RemotePropID = 50)]
+        [ACPropertyBindingTarget(136, "RB_ProcessResultAlarmCode", "en{'Discharging Equipment Alarm (136)'}de{'Gerätealarm Entleeren (136)'}", "", false, false)]
         public IACContainerTNet<RB_ProcessResultAlarmCode> ADMBDischargingEquipmentAlarm { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 137
         /// Only to Version 2.2, Deprecated in Version 3.2
         /// </summary>
-        [ACPropertyBindingTarget(137, "ADMBPositioningEquipmentAlarm", "en{'Positioning Equipment Alarm (137)'}de{'Gerätealarm Positionieren (137)'}", "", false, false, RemotePropID = 51)]
+        [ACPropertyBindingTarget(137, "ADMBPositioningEquipmentAlarm", "en{'Positioning Equipment Alarm (137)'}de{'Gerätealarm Positionieren (137)'}", "", false, false)]
         public IACContainerTNet<ADMB_PositioningEquipmentAlarm> ADMBPositioningEquipmentAlarm { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 137
         /// New in Version 3.2 (Register 137)
         /// </summary>
-        [ACPropertyBindingTarget(137, "ADMB_VariousEquipmentsAlarm", "en{'Various Equipments Alarm (137)'}de{'Versch. Gerätealarme (137)'}", "", false, false, RemotePropID = 51)]
+        [ACPropertyBindingTarget(137, "ADMB_VariousEquipmentsAlarm", "en{'Various Equipments Alarm (137)'}de{'Versch. Gerätealarme (137)'}", "", false, false)]
         public IACContainerTNet<ADMB_VariousEquipmentsAlarm> ADMBVariousEquipmentsAlarm { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 138
         /// Only to Version 2.2, Deprecated in Version 3.2 (Register 138)
         /// </summary>
-        [ACPropertyBindingTarget(138, "ADMBDustExtractionEquipmentAlarm", "en{'ADMBDustExtractionEquipmentAlarm'}de{'ADMBDustExtractionEquipmentAlarm'}", "", false, false, RemotePropID = 52)]
+        [ACPropertyBindingTarget(138, "ADMBDustExtractionEquipmentAlarm", "en{'ADMBDustExtractionEquipmentAlarm'}de{'ADMBDustExtractionEquipmentAlarm'}", "", false, false)]
         public IACContainerTNet<ADMB_DustExtractionEquipmentAlarm> ADMBDustExtractionEquipmentAlarm { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 139
         /// </summary>
-        [ACPropertyBindingTarget(139, "ADMBProcessOperation", "en{'Process Operation (139)'}de{'Funktion (Proc.-Op. 139)'}", "", false, false, RemotePropID = 53)]
+        [ACPropertyBindingTarget(139, "ADMBProcessOperation", "en{'Process Operation (139)'}de{'Funktion (Proc.-Op. 139)'}", "", false, false)]
         public IACContainerTNet<ADMB_ProcessOperation> ADMBProcessOperation { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 140
         /// </summary>
-        [ACPropertyBindingTarget(140, "ADMBActualBinContNumber", "en{'Actual Source (140)'}de{'Aktuelle Quelle (140)'}", "", false, false, RemotePropID = 54)]
+        [ACPropertyBindingTarget(140, "ADMBActualBinContNumber", "en{'Actual Source (140)'}de{'Aktuelle Quelle (140)'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBActualBinContNumber { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 141
         /// </summary>
-        [ACPropertyBindingTarget(141, "ADMBActualDischargePosition", "en{'Actual Discharge Position (141)'}de{'Aktuelle Entleerposition (141)'}", "", false, false, RemotePropID = 55)]
+        [ACPropertyBindingTarget(141, "ADMBActualDischargePosition", "en{'Actual Discharge Position (141)'}de{'Aktuelle Entleerposition (141)'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBActualDischargePosition { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 142
         /// </summary>
-        [ACPropertyBindingTarget(142, "ADMBActualWeigherNumber", "en{'Actual Weigher (142)'}de{'Aktuelle Waage (142)'}", "", false, false, RemotePropID = 56)]
+        [ACPropertyBindingTarget(142, "ADMBActualWeigherNumber", "en{'Actual Weigher (142)'}de{'Aktuelle Waage (142)'}", "", false, false)]
         public IACContainerTNet<CB_WeigherNumber> ADMBActualWeigherNumber { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 143+144
         /// </summary>
-        [ACPropertyBindingTarget(143, "ADMBActualWeight", "en{'Actual Weight [g] (143+44)'}de{'Aktuelles Gewicht [g] (143+44)'}", "", false, false, RemotePropID = 57)]
+        [ACPropertyBindingTarget(143, "ADMBActualWeight", "en{'Actual Weight [g] (143+44)'}de{'Aktuelles Gewicht [g] (143+44)'}", "", false, false)]
         public IACContainerTNet<Int32> ADMBActualWeight { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 145
         /// </summary>
-        [ACPropertyBindingTarget(145, "ADMBActualDosingTime", "en{'Dosing time [s] (145)'}de{'Dosierzeit [s] (145)'}", "", false, false, RemotePropID = 58)]
+        [ACPropertyBindingTarget(145, "ADMBActualDosingTime", "en{'Dosing time [s] (145)'}de{'Dosierzeit [s] (145)'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBActualDosingTime { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 146-147
         /// </summary>
-        [ACPropertyBindingTarget(146, "ADMBWeigher1GrossWeight", "en{'Weigher 1 Gross [g] (146+47)'}de{'Waage 1 Brutto [g] (146+47)'}", "", false, false, RemotePropID = 59)]
+        [ACPropertyBindingTarget(146, "ADMBWeigher1GrossWeight", "en{'Weigher 1 Gross [g] (146+47)'}de{'Waage 1 Brutto [g] (146+47)'}", "", false, false)]
         public IACContainerTNet<Int32> ADMBWeigher1GrossWeight { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 148+149
         /// </summary>
-        [ACPropertyBindingTarget(148, "ADMBWeigher2GrossWeight", "en{'Weigher 2 Gross [g] (148+49)'}de{'Waage 2 Brutto [g] (148+49)'}", "", false, false, RemotePropID = 60)]
+        [ACPropertyBindingTarget(148, "ADMBWeigher2GrossWeight", "en{'Weigher 2 Gross [g] (148+49)'}de{'Waage 2 Brutto [g] (148+49)'}", "", false, false)]
         public IACContainerTNet<Int32> ADMBWeigher2GrossWeight { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 150
         /// </summary>
-        [ACPropertyBindingTarget(150, "ADMBActualPosition", "en{'Actual Position (150)'}de{'Aktuelle Position (150)'}", "", false, false, RemotePropID = 61)]
+        [ACPropertyBindingTarget(150, "ADMBActualPosition", "en{'Actual Position (150)'}de{'Aktuelle Position (150)'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBActualPosition { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 151
         /// </summary>
-        [ACPropertyBindingTarget(151, "ADMBBatchIDAlfraScale", "en{'ADMBBatchIDAlfraScale'}de{'ADMBBatchIDAlfraScale'}", "", false, false, RemotePropID = 62)]
+        [ACPropertyBindingTarget(151, "ADMBBatchIDAlfraScale", "en{'ADMBBatchIDAlfraScale'}de{'ADMBBatchIDAlfraScale'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBBatchIDAlfraScale { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 152
         /// </summary>
-        [ACPropertyBindingTarget(152, "ADMBStatusAlfraTransport", "en{'ADMBStatusAlfraTransport'}de{'ADMBStatusAlfraTransport'}", "", false, false, RemotePropID = 63)]
+        [ACPropertyBindingTarget(152, "ADMBStatusAlfraTransport", "en{'ADMBStatusAlfraTransport'}de{'ADMBStatusAlfraTransport'}", "", false, false)]
         public IACContainerTNet<ADMB_StatusAlfraTransport> ADMBStatusAlfraTransport { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 153
         /// </summary>
-        [ACPropertyBindingTarget(153, "ADMBBatchIDAlfraTransport", "en{'ADMBBatchIDAlfraTransport'}de{'ADMBBatchIDAlfraTransport'}", "", false, false, RemotePropID = 64)]
+        [ACPropertyBindingTarget(153, "ADMBBatchIDAlfraTransport", "en{'ADMBBatchIDAlfraTransport'}de{'ADMBBatchIDAlfraTransport'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBBatchIDAlfraTransport { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 154
         /// </summary>
-        [ACPropertyBindingTarget(154, "ADMBStatusAlfraCheckWeigher", "en{'ADMBStatusAlfraCheckWeigher'}de{'ADMBStatusAlfraCheckWeigher'}", "", false, false, RemotePropID = 65)]
+        [ACPropertyBindingTarget(154, "ADMBStatusAlfraCheckWeigher", "en{'ADMBStatusAlfraCheckWeigher'}de{'ADMBStatusAlfraCheckWeigher'}", "", false, false)]
         public IACContainerTNet<ADMB_StatusAlfraCheckWeigher> ADMBStatusAlfraCheckWeigher { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 155
         /// </summary>
-        [ACPropertyBindingTarget(155, "ADMBBatchIDCheckWeigher", "en{'ADMBBatchIDCheckWeigher'}de{'ADMBBatchIDCheckWeigher'}", "", false, false, RemotePropID = 66)]
+        [ACPropertyBindingTarget(155, "ADMBBatchIDCheckWeigher", "en{'ADMBBatchIDCheckWeigher'}de{'ADMBBatchIDCheckWeigher'}", "", false, false)]
         public IACContainerTNet<UInt16> ADMBBatchIDCheckWeigher { get; set; }
 
         /// <summary>
         /// 5.1. ASYNCHRONOUS DATA MONITORING BLOCK, Holding-Register 156+157
         /// </summary>
-        [ACPropertyBindingTarget(156, "ADMBAlreadyDosedWeightWeight", "en{'Actual dosing weight [g] (156+57'}de{'Aktuelles Dosiergewicht [g] (156+57)'}", "", false, false, RemotePropID = 66)]
+        [ACPropertyBindingTarget(156, "ADMBAlreadyDosedWeightWeight", "en{'Actual dosing weight [g] (156+57'}de{'Aktuelles Dosiergewicht [g] (156+57)'}", "", false, false)]
         public IACContainerTNet<Int32> ADMBAlreadyDosedWeightWeight { get; set; }
         #endregion
 
@@ -672,25 +672,25 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 5.2. ASYNCHRONOUS COMMAND MONITORING BLOCK, Holding-Register 160
         /// </summary>
-        [ACPropertyBindingTarget(160, "ACMBFillingAllowed", "en{'ACMBFillingAllowed'}de{'ACMBFillingAllowed'}", "", false, false, RemotePropID = 67)]
+        [ACPropertyBindingTarget(160, "ACMBFillingAllowed", "en{'ACMBFillingAllowed'}de{'ACMBFillingAllowed'}", "", false, false)]
         public IACContainerTNet<ACMB_FillingAllowed> ACMBFillingAllowed { get; set; }
 
         /// <summary>
         /// 5.2. ASYNCHRONOUS COMMAND MONITORING BLOCK, Holding-Register 161
         /// </summary>
-        [ACPropertyBindingTarget(161, "ACMBRequestedWeightReached", "en{'ACMBRequestedWeightReached'}de{'ACMBRequestedWeightReached'}", "", false, false, RemotePropID = 68)]
+        [ACPropertyBindingTarget(161, "ACMBRequestedWeightReached", "en{'ACMBRequestedWeightReached'}de{'ACMBRequestedWeightReached'}", "", false, false)]
         public IACContainerTNet<ACMB_RequestedWeightReached> ACMBRequestedWeightReached { get; set; }
 
         /// <summary>
         /// 5.2. ASYNCHRONOUS COMMAND MONITORING BLOCK, Holding-Register 162
         /// </summary>
-        [ACPropertyBindingTarget(162, "ACMBRequestDischargeTransport", "en{'ACMBRequestDischargeTransport'}de{'ACMBRequestDischargeTransport'}", "", false, false, RemotePropID = 69)]
+        [ACPropertyBindingTarget(162, "ACMBRequestDischargeTransport", "en{'ACMBRequestDischargeTransport'}de{'ACMBRequestDischargeTransport'}", "", false, false)]
         public IACContainerTNet<ACMB_RequestDischargeTransport> ACMBRequestDischargeTransport { get; set; }
 
         /// <summary>
         /// 5.2. ASYNCHRONOUS COMMAND MONITORING BLOCK, Holding-Register 163
         /// </summary>
-        [ACPropertyBindingTarget(163, "ACMBAptTransportValidCheckResults", "en{'ACMBAptTransportValidCheckResults'}de{'ACMBAptTransportValidCheckResults'}", "", false, false, RemotePropID = 70)]
+        [ACPropertyBindingTarget(163, "ACMBAptTransportValidCheckResults", "en{'ACMBAptTransportValidCheckResults'}de{'ACMBAptTransportValidCheckResults'}", "", false, false)]
         public IACContainerTNet<ACMB_AptTransportValidCheckResults> ACMBAptTransportValidCheckResults { get; set; }
         #endregion
 
@@ -699,85 +699,85 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 113
         /// </summary>
-        [ACPropertyBindingTarget(113, "AAMBAlarmPositioning", "en{'AAMBAlarmPositioning'}de{'AAMBAlarmPositioning'}", "", false, false, RemotePropID = 29)]
+        [ACPropertyBindingTarget(113, "AAMBAlarmPositioning", "en{'AAMBAlarmPositioning'}de{'AAMBAlarmPositioning'}", "", false, false)]
         public IACContainerTNet<AlarmPositioning> AAMBAlarmPositioning { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 114
         /// </summary>
-        [ACPropertyBindingTarget(114, "AAMBAlarmWeigher", "en{'AAMBAlarmWeigher'}de{'AAMBAlarmWeigher'}", "", false, false, RemotePropID = 30)]
+        [ACPropertyBindingTarget(114, "AAMBAlarmWeigher", "en{'AAMBAlarmWeigher'}de{'AAMBAlarmWeigher'}", "", false, false)]
         public IACContainerTNet<AlarmWeigher> AAMBAlarmWeigher { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 115
         /// </summary>
-        [ACPropertyBindingTarget(115, "AAMBAlarmDustExhaust", "en{'AAMBAlarmDustExhaust'}de{'AAMBAlarmDustExhaust'}", "", false, false, RemotePropID = 31)]
+        [ACPropertyBindingTarget(115, "AAMBAlarmDustExhaust", "en{'AAMBAlarmDustExhaust'}de{'AAMBAlarmDustExhaust'}", "", false, false)]
         public IACContainerTNet<AlarmDustExhaust> AAMBAlarmDustExhaust { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 116
         /// </summary>
-        [ACPropertyBindingTarget(116, "AAMBAlarmDosingSlides1", "en{'AAMBAlarmDosingSlides1'}de{'AAMBAlarmDosingSlides1'}", "", false, false, RemotePropID = 32)]
+        [ACPropertyBindingTarget(116, "AAMBAlarmDosingSlides1", "en{'AAMBAlarmDosingSlides1'}de{'AAMBAlarmDosingSlides1'}", "", false, false)]
         public IACContainerTNet<AlarmDosingSlides1> AAMBAlarmDosingSlides1 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 117
         /// </summary>
-        [ACPropertyBindingTarget(117, "AAMBAlarmDosingSlides2", "en{'AAMBAlarmDosingSlides2'}de{'AAMBAlarmDosingSlides2'}", "", false, false, RemotePropID = 33)]
+        [ACPropertyBindingTarget(117, "AAMBAlarmDosingSlides2", "en{'AAMBAlarmDosingSlides2'}de{'AAMBAlarmDosingSlides2'}", "", false, false)]
         public IACContainerTNet<AlarmDosingSlides2> AAMBAlarmDosingSlides2 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 118
         /// </summary>
-        [ACPropertyBindingTarget(118, "AAMBAlarmDosingScrew1", "en{'AAMBAlarmDosingScrew1'}de{'AAMBAlarmDosingScrew1'}", "", false, false, RemotePropID = 34)]
+        [ACPropertyBindingTarget(118, "AAMBAlarmDosingScrew1", "en{'AAMBAlarmDosingScrew1'}de{'AAMBAlarmDosingScrew1'}", "", false, false)]
         public IACContainerTNet<AlarmDosingScrew1> AAMBAlarmDosingScrew1 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 119
         /// </summary>
-        [ACPropertyBindingTarget(119, "AAMBAlarmDosingScrew2", "en{'AAMBAlarmDosingScrew2'}de{'AAMBAlarmDosingScrew2'}", "", false, false, RemotePropID = 35)]
+        [ACPropertyBindingTarget(119, "AAMBAlarmDosingScrew2", "en{'AAMBAlarmDosingScrew2'}de{'AAMBAlarmDosingScrew2'}", "", false, false)]
         public IACContainerTNet<AlarmDosingScrew2> AAMBAlarmDosingScrew2 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 120
         /// </summary>
-        [ACPropertyBindingTarget(120, "AAMBAlarmDosingFrame1", "en{'AAMBAlarmDosingFrame1'}de{'AAMBAlarmDosingFrame1'}", "", false, false, RemotePropID = 36)]
+        [ACPropertyBindingTarget(120, "AAMBAlarmDosingFrame1", "en{'AAMBAlarmDosingFrame1'}de{'AAMBAlarmDosingFrame1'}", "", false, false)]
         public IACContainerTNet<AlarmDosingFrame1> AAMBAlarmDosingFrame1 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 121
         /// </summary>
-        [ACPropertyBindingTarget(121, "AAMBAlarmDosingFrame2", "en{'AAMBAlarmDosingFrame2'}de{'AAMBAlarmDosingFrame2'}", "", false, false, RemotePropID = 37)]
+        [ACPropertyBindingTarget(121, "AAMBAlarmDosingFrame2", "en{'AAMBAlarmDosingFrame2'}de{'AAMBAlarmDosingFrame2'}", "", false, false)]
         public IACContainerTNet<AlarmDosingFrame2> AAMBAlarmDosingFrame2 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 122
         /// </summary>
-        [ACPropertyBindingTarget(122, "AAMBAlarmStirringDevices1", "en{'AAMBAlarmStirringDevices1'}de{'AAMBAlarmStirringDevices1'}", "", false, false, RemotePropID = 38)]
+        [ACPropertyBindingTarget(122, "AAMBAlarmStirringDevices1", "en{'AAMBAlarmStirringDevices1'}de{'AAMBAlarmStirringDevices1'}", "", false, false)]
         public IACContainerTNet<AlarmStirringDevices1> AAMBAlarmStirringDevices1 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 123
         /// </summary>
-        [ACPropertyBindingTarget(123, "AAMBAlarmStirringDevices2", "en{'AAMBAlarmStirringDevices2'}de{'AAMBAlarmStirringDevices2'}", "", false, false, RemotePropID = 39)]
+        [ACPropertyBindingTarget(123, "AAMBAlarmStirringDevices2", "en{'AAMBAlarmStirringDevices2'}de{'AAMBAlarmStirringDevices2'}", "", false, false)]
         public IACContainerTNet<AlarmStirringDevices2> AAMBAlarmStirringDevices2 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 124
         /// </summary>
-        [ACPropertyBindingTarget(124, "AAMBAlarmGeneral1", "en{'AAMBAlarmGeneral1'}de{'AAMBAlarmGeneral1'}", "", false, false, RemotePropID = 40)]
+        [ACPropertyBindingTarget(124, "AAMBAlarmGeneral1", "en{'AAMBAlarmGeneral1'}de{'AAMBAlarmGeneral1'}", "", false, false)]
         public IACContainerTNet<AlarmGeneral1> AAMBAlarmGeneral1 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 125
         /// </summary>
-        [ACPropertyBindingTarget(125, "AAMBAlarmGeneral2", "en{'AAMBAlarmGeneral2'}de{'AAMBAlarmGeneral2'}", "", false, false, RemotePropID = 41)]
+        [ACPropertyBindingTarget(125, "AAMBAlarmGeneral2", "en{'AAMBAlarmGeneral2'}de{'AAMBAlarmGeneral2'}", "", false, false)]
         public IACContainerTNet<AlarmGeneral2> AAMBAlarmGeneral2 { get; set; }
 
         /// <summary>
         /// 5.5 ASYNCHRONOUS ALARM MONITORING BLOCK, Holding-Register 126
         /// </summary>
-        [ACPropertyBindingTarget(126, "AAMBAlarmGeneral3", "en{'AAMBAlarmGeneral3'}de{'AAMBAlarmGeneral3'}", "", false, false, RemotePropID = 42)]
+        [ACPropertyBindingTarget(126, "AAMBAlarmGeneral3", "en{'AAMBAlarmGeneral3'}de{'AAMBAlarmGeneral3'}", "", false, false)]
         public IACContainerTNet<AlarmGeneral3> AAMBAlarmGeneral3 { get; set; }
         #endregion
 
@@ -786,7 +786,7 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 3.5. COMMUNICATION LIFE SIGNAL Holding-Register 164
         /// </summary>
-        [ACPropertyBindingTarget(164, "LifeSignalAcknowledge", "en{'LifeSignalAcknowledge'}de{'LifeSignalAcknowledge'}", "", false, false, RemotePropID = 71)]
+        [ACPropertyBindingTarget(164, "LifeSignalAcknowledge", "en{'LifeSignalAcknowledge'}de{'LifeSignalAcknowledge'}", "", false, false)]
         public IACContainerTNet<UInt16> LifeSignalAcknowledge { get; set; }
 
         protected UInt16 _LifeSignalAcknowledgeValue
@@ -797,7 +797,7 @@ namespace kse.mes.processapplication
 
 
         #region EXTERNAL PLC
-        [ACPropertyBindingTarget(165, "DischargeReleasedExtern", "en{'DischargeReleasedExtern'}de{'DischargeReleasedExtern'}", "", false, false, RemotePropID = 72)]
+        [ACPropertyBindingTarget(165, "DischargeReleasedExtern", "en{'DischargeReleasedExtern'}de{'DischargeReleasedExtern'}", "", false, false)]
         public IACContainerTNet<UInt16> DischargeReleasedExtern { get; set; }
         protected IACPropertyNetTarget _DischargeReleasedExtern
         {
@@ -821,103 +821,103 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 1
         /// </summary>
-        [ACPropertyBindingTarget(1, "CBCommandNumber", "en{'Command-No. (1)'}de{'Kommando-Nr. (1)'}", "", false, false, RemotePropID = 73)]
+        [ACPropertyBindingTarget(1, "CBCommandNumber", "en{'Command-No. (1)'}de{'Kommando-Nr. (1)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBCommandNumber { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 2
         /// </summary>
-        [ACPropertyBindingTarget(2, "CBCommandOperationMode", "en{'Function (Cmd.Op.Mode 2)'}de{'Funktion (Cmd.Op.Mode 2)'}", "", false, false, RemotePropID = 74)]
+        [ACPropertyBindingTarget(2, "CBCommandOperationMode", "en{'Function (Cmd.Op.Mode 2)'}de{'Funktion (Cmd.Op.Mode 2)'}", "", false, false)]
         public IACContainerTNet<CB_CommandOperationMode> CBCommandOperationMode { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 3
         /// </summary>
-        [ACPropertyBindingTarget(3, "CBDosingBinNumber", "en{'Dosing-source (Bin-No. 3)'}de{'Dosierquelle (3)'}", "", false, false, RemotePropID = 75)]
+        [ACPropertyBindingTarget(3, "CBDosingBinNumber", "en{'Dosing-source (Bin-No. 3)'}de{'Dosierquelle (3)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBDosingBinNumber { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 4
         /// </summary>
-        [ACPropertyBindingTarget(4, "CBDischargingPosition", "en{'Discharging position (4)'}de{'Entleerposition (4)'}", "", false, false, RemotePropID = 76)]
+        [ACPropertyBindingTarget(4, "CBDischargingPosition", "en{'Discharging position (4)'}de{'Entleerposition (4)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBDischargingPosition { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 5
         /// </summary>
-        [ACPropertyBindingTarget(5, "CBWeigherNumber", "en{'Weigher (5)'}de{'Waage. (5)'}", "", false, false, RemotePropID = 77)]
+        [ACPropertyBindingTarget(5, "CBWeigherNumber", "en{'Weigher (5)'}de{'Waage. (5)'}", "", false, false)]
         public IACContainerTNet<CB_WeigherNumber> CBWeigherNumber { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 6
         /// </summary>
-        [ACPropertyBindingTarget(6, "CBCheckTare", "en{'Check tare (6)'}de{'Taraprüfung (6)'}", "", false, false, RemotePropID = 78)]
+        [ACPropertyBindingTarget(6, "CBCheckTare", "en{'Check tare (6)'}de{'Taraprüfung (6)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBCheckTare { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 7+8
         /// </summary>
-        [ACPropertyBindingTarget(7, "CBRequestedWeight", "en{'Target-Quantity [g]  (7+8)'}de{'Sollgewicht [g] (7+8)'}", "", false, false, RemotePropID = 79)]
+        [ACPropertyBindingTarget(7, "CBRequestedWeight", "en{'Target-Quantity [g]  (7+8)'}de{'Sollgewicht [g] (7+8)'}", "", false, false)]
         public IACContainerTNet<Int32> CBRequestedWeight { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 9
         /// </summary>
-        [ACPropertyBindingTarget(9, "CBTolerancePositive", "en{'Tolerance + [g] (9)'}de{'Toleranz + [g] (9)'}", "", false, false, RemotePropID = 80)]
+        [ACPropertyBindingTarget(9, "CBTolerancePositive", "en{'Tolerance + [g] (9)'}de{'Toleranz + [g] (9)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBTolerancePositive { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 10
         /// </summary>
-        [ACPropertyBindingTarget(10, "CBToleranceNegative", "en{'Tolerance - [g] (10)'}de{'Toleranz - [g] (10)'}", "", false, false, RemotePropID = 81)]
+        [ACPropertyBindingTarget(10, "CBToleranceNegative", "en{'Tolerance - [g] (10)'}de{'Toleranz - [g] (10)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBToleranceNegative { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 11
         /// </summary>
-        [ACPropertyBindingTarget(11, "CBDosingAccuracy", "en{'Accuracy [g] (11)'}de{'Genauigkeit [g] (11)'}", "", false, false, RemotePropID = 82)]
+        [ACPropertyBindingTarget(11, "CBDosingAccuracy", "en{'Accuracy [g] (11)'}de{'Genauigkeit [g] (11)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBDosingAccuracy { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 12
         /// </summary>
-        [ACPropertyBindingTarget(12, "CBIndicationDosability", "en{'Indication dosability (12)'}de{'Dosierbarkeitsindex (12)'}", "", false, false, RemotePropID = 83)]
+        [ACPropertyBindingTarget(12, "CBIndicationDosability", "en{'Indication dosability (12)'}de{'Dosierbarkeitsindex (12)'}", "", false, false)]
         public IACContainerTNet<CB_IndicationDosability> CBIndicationDosability { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 13
         /// </summary>
-        [ACPropertyBindingTarget(13, "CBDosingMode", "en{'Dosing mode (13)'}de{'Dosiermodus (13)'}", "", false, false, RemotePropID = 84)]
+        [ACPropertyBindingTarget(13, "CBDosingMode", "en{'Dosing mode (13)'}de{'Dosiermodus (13)'}", "", false, false)]
         public IACContainerTNet<CB_DosingMode> CBDosingMode { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 14
         /// </summary>
-        [ACPropertyBindingTarget(14, "CBPosDosDestination", "en{'Positioning destination (14)'}de{'Zielposition (14)'}", "", false, false, RemotePropID = 86)]
+        [ACPropertyBindingTarget(14, "CBPosDosDestination", "en{'Positioning destination (14)'}de{'Zielposition (14)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBPosDosDestination { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 15
         /// </summary>
-        [ACPropertyBindingTarget(15, "CBMassDensity", "en{'Density (15)'}de{'Dichte (15)'}", "", false, false, RemotePropID = 87)]
+        [ACPropertyBindingTarget(15, "CBMassDensity", "en{'Density (15)'}de{'Dichte (15)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBMassDensity { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 16
         /// </summary>
-        [ACPropertyBindingTarget(16, "CBBatchID", "en{'Batch-ID (16)'}de{'Batch-ID (16)'}", "", false, false, RemotePropID = 88)]
+        [ACPropertyBindingTarget(16, "CBBatchID", "en{'Batch-ID (16)'}de{'Batch-ID (16)'}", "", false, false)]
         public IACContainerTNet<UInt16> CBBatchID { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 17
         /// </summary>
-        [ACPropertyBindingTarget(17, "CBBatchEnd", "en{'Batch end (17)'}de{'Letzter Batch (17)'}", "", false, false, RemotePropID = 89)]
+        [ACPropertyBindingTarget(17, "CBBatchEnd", "en{'Batch end (17)'}de{'Letzter Batch (17)'}", "", false, false)]
         public IACContainerTNet<CB_BatchEnd> CBBatchEnd { get; set; }
 
         /// <summary>
         /// 4.1. COMMAND BLOCK, Holding-Register 32
         /// </summary>
-        [ACPropertyBindingTarget(32, "CBCommandValid", "en{'Start (Cmd. valid 32)'}de{'Starten (Cmd. valid 32)'}", "", false, false, RemotePropID = 91)]
+        [ACPropertyBindingTarget(32, "CBCommandValid", "en{'Start (Cmd. valid 32)'}de{'Starten (Cmd. valid 32)'}", "", false, false)]
         public IACContainerTNet<CB_CommandValid> CBCommandValid { get; set; }
         #endregion
 
@@ -926,7 +926,7 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 4.4. RESULT RESPONSE BLOCK, Holding-Register 31, Handshake mit RBResultValid
         /// </summary>
-        [ACPropertyBindingTarget(31, "RRBResultAcknowledge", "en{'Read-Acknowledge (Res. ACK 31)'}de{'Lesebestätigung (Res. ACK 31)'}", "", false, false, RemotePropID = 90)]
+        [ACPropertyBindingTarget(31, "RRBResultAcknowledge", "en{'Read-Acknowledge (Res. ACK 31)'}de{'Lesebestätigung (Res. ACK 31)'}", "", false, false)]
         public IACContainerTNet<RRB_ResultAcknowledge> RRBResultAcknowledge { get; set; }
         #endregion
 
@@ -935,61 +935,61 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 34
         /// </summary>
-        [ACPropertyBindingTarget(34, "ACBResetAlarmStatus", "en{'Reset Alarm-Status (34)'}de{'Reset Alarm-Status (34)'}", "", false, false, RemotePropID = 93)]
+        [ACPropertyBindingTarget(34, "ACBResetAlarmStatus", "en{'Reset Alarm-Status (34)'}de{'Reset Alarm-Status (34)'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBResetAlarmStatus { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 35
         /// </summary>
-        [ACPropertyBindingTarget(35, "ACBStopCommand", "en{'Stop command (35)'}de{'Stoppen (Stop.-Cmd.35)'}", "", false, false, RemotePropID = 94)]
+        [ACPropertyBindingTarget(35, "ACBStopCommand", "en{'Stop command (35)'}de{'Stoppen (Stop.-Cmd.35)'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBStopCommand { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 36
         /// </summary>
-        [ACPropertyBindingTarget(36, "ACBExternalDischargeRelease", "en{'External Discharge Release (36)'}de{'Externe-Entleerfreigabe (36)'}", "", false, false, RemotePropID = 95)]
+        [ACPropertyBindingTarget(36, "ACBExternalDischargeRelease", "en{'External Discharge Release (36)'}de{'Externe-Entleerfreigabe (36)'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBExternalDischargeRelease { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 37
         /// </summary>
-        [ACPropertyBindingTarget(37, "ACBExternalTransportReady", "en{'ACBExternalTransportReady'}de{'ACBExternalTransportReady'}", "", false, false, RemotePropID = 96)]
+        [ACPropertyBindingTarget(37, "ACBExternalTransportReady", "en{'ACBExternalTransportReady'}de{'ACBExternalTransportReady'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBExternalTransportReady { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 38
         /// </summary>
-        [ACPropertyBindingTarget(38, "ACBExternalDischargeReleaseAptTransport", "en{'ACBExternalDischargeReleaseAptTransport'}de{'ACBExternalDischargeReleaseAptTransport'}", "", false, false, RemotePropID = 97)]
+        [ACPropertyBindingTarget(38, "ACBExternalDischargeReleaseAptTransport", "en{'ACBExternalDischargeReleaseAptTransport'}de{'ACBExternalDischargeReleaseAptTransport'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBExternalDischargeReleaseAptTransport { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 39
         /// </summary>
-        [ACPropertyBindingTarget(39, "ACBAptTransportResultAcknowledge", "en{'ACBAptTransportResultAcknowledge'}de{'ACBAptTransportResultAcknowledge'}", "", false, false, RemotePropID = 98)]
+        [ACPropertyBindingTarget(39, "ACBAptTransportResultAcknowledge", "en{'ACBAptTransportResultAcknowledge'}de{'ACBAptTransportResultAcknowledge'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBAptTransportResultAcknowledge { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 40
         /// </summary>
-        [ACPropertyBindingTarget(40, "ACBAptTransportRestart", "en{'ACBAptTransportRestart'}de{'ACBAptTransportRestart'}", "", false, false, RemotePropID = 99)]
+        [ACPropertyBindingTarget(40, "ACBAptTransportRestart", "en{'ACBAptTransportRestart'}de{'ACBAptTransportRestart'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBAptTransportRestart { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 41, DEPRECATED!
         /// </summary>
-        [ACPropertyBindingTarget(41, "ACBRestartAlarm", "en{'ACBRestartAlarm'}de{'ACBRestartAlarm'}", "", false, false, RemotePropID = 100)]
+        [ACPropertyBindingTarget(41, "ACBRestartAlarm", "en{'ACBRestartAlarm'}de{'ACBRestartAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBRestartAlarm { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 42, DEPRECATED!
         /// </summary>
-        [ACPropertyBindingTarget(42, "ACBApproveAlarm", "en{'ACBApproveAlarm'}de{'ACBApproveAlarm'}", "", false, false, RemotePropID = 101)]
+        [ACPropertyBindingTarget(42, "ACBApproveAlarm", "en{'ACBApproveAlarm'}de{'ACBApproveAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBApproveAlarm { get; set; }
 
         /// <summary>
         /// 5.3. ASYNCHRONOUS COMMAND BLOCK, Holding-Register 43, DEPRECATED!
         /// </summary>
-        [ACPropertyBindingTarget(43, "ACBRejectAlarm", "en{'ACBRejectAlarm'}de{'ACBRejectAlarm'}", "", false, false, RemotePropID = 102)]
+        [ACPropertyBindingTarget(43, "ACBRejectAlarm", "en{'ACBRejectAlarm'}de{'ACBRejectAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ACBRejectAlarm { get; set; }
         #endregion
 
@@ -998,13 +998,13 @@ namespace kse.mes.processapplication
         /// <summary>
         /// 5.4. ASYNCHRONOUS SYSTEM RESET, Holding-Register 33
         /// </summary>
-        [ACPropertyBindingTarget(33, "ASRResetMachine", "en{'System-Reset (33)'}de{'System-Reset (33)'}", "", false, false, RemotePropID = 92)]
+        [ACPropertyBindingTarget(33, "ASRResetMachine", "en{'System-Reset (33)'}de{'System-Reset (33)'}", "", false, false)]
         public IACContainerTNet<UInt16> ASRResetMachine { get; set; }
         #endregion
 
 
         #region 3.5. COMMUNICATION LIFE SIGNAL (64)
-        [ACPropertyBindingTarget(64, "LifeSignalRequest", "en{'LifeSignalRequest'}de{'LifeSignalRequest'}", "", false, false, RemotePropID = 103)]
+        [ACPropertyBindingTarget(64, "LifeSignalRequest", "en{'LifeSignalRequest'}de{'LifeSignalRequest'}", "", false, false)]
         public IACContainerTNet<UInt16> LifeSignalRequest { get; set; }
 
         protected virtual UInt16 _LifeSignalRequestValue
@@ -1016,7 +1016,7 @@ namespace kse.mes.processapplication
 
 
         #region EXTERNAL PLC
-        [ACPropertyBindingTarget(10, "Destination", "en{'Destination GIP'}de{'Ziel GIP'}", "", false, false, RemotePropID = 104)]
+        [ACPropertyBindingTarget(10, "Destination", "en{'Destination GIP'}de{'Ziel GIP'}", "", false, false)]
         public IACContainerTNet<UInt16> Destination { get; set; }
         #endregion
 

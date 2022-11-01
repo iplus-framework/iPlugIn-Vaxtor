@@ -42,7 +42,7 @@ namespace kse.mes.processapplication
 
         
 
-        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false, RemotePropID=25)]
+        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false)]
         public IACContainerTNet<ContFillAlarmCode> AlarmCode { get; set; }
         protected IACPropertyNetTarget _AlarmCode
         {
@@ -56,22 +56,22 @@ namespace kse.mes.processapplication
             get { return AlarmCode.ValueT; }
         }
 
-        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false, RemotePropID=26)]
+        [ACPropertyBindingTarget(104, "AlarmReference", "en{'AlarmReference'}de{'AlarmReference'}", "", false, false)]
         public IACContainerTNet<UInt16> AlarmReference { get; set; }
 
-        [ACPropertyBindingTarget(105, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false, RemotePropID=27)]
+        [ACPropertyBindingTarget(105, "ContainerNr", "en{'ContainerNr'}de{'ContainerNr'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerNr { get; set; }
 
-        [ACPropertyBindingTarget(106, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false, RemotePropID=28)]
+        [ACPropertyBindingTarget(106, "ContainerCode", "en{'ContainerCode'}de{'ContainerCode'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerCode { get; set; }
 
-        [ACPropertyBindingTarget(107, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false, RemotePropID=29)]
+        [ACPropertyBindingTarget(107, "GrossWeight", "en{'GrossWeight'}de{'GrossWeight'}", "", false, false)]
         public IACContainerTNet<Int32> GrossWeight { get; set; }
 
-        [ACPropertyBindingTarget(109, "NetWeight", "en{'NetWeight'}de{'NetWeight'}", "", false, false, RemotePropID=30)]
+        [ACPropertyBindingTarget(109, "NetWeight", "en{'NetWeight'}de{'NetWeight'}", "", false, false)]
         public IACContainerTNet<Int32> NetWeight { get; set; }
 
-        [ACPropertyBindingTarget(111, "FillingOK", "en{'FillingOK'}de{'FillingOK'}", "", false, false, RemotePropID=31)]
+        [ACPropertyBindingTarget(111, "FillingOK", "en{'FillingOK'}de{'FillingOK'}", "", false, false)]
         public IACContainerTNet<FillingOK> FillingOK { get; set; }
         protected IACPropertyNetTarget _FillingOK
         {
@@ -85,11 +85,11 @@ namespace kse.mes.processapplication
             get { return FillingOK.ValueT; }
         }
 
-        [ACPropertyBindingTarget(112, "FillingOKExtern", "en{'FillingOKExtern'}de{'FillingOKExtern'}", "", false, false, RemotePropID=32)]
+        [ACPropertyBindingTarget(112, "FillingOKExtern", "en{'FillingOKExtern'}de{'FillingOKExtern'}", "", false, false)]
         public IACContainerTNet<FillingOK> FillingOKExtern { get; set; }
 
 
-        [ACPropertyBindingTarget(111, "ButtonFinished", "en{'ButtonFinished'}de{'ButtonFinished'}", "", false, false, RemotePropID=33)]
+        [ACPropertyBindingTarget(111, "ButtonFinished", "en{'ButtonFinished'}de{'ButtonFinished'}", "", false, false)]
         public IACContainerTNet<UInt16> ButtonFinished { get; set; }
         protected IACPropertyNetTarget _ButtonFinished
         {
@@ -108,7 +108,7 @@ namespace kse.mes.processapplication
 
         #region Write-Values to PLC
 
-        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false, RemotePropID=33)]
+        [ACPropertyBindingTarget(3, "ResetAlarm", "en{'ResetAlarm'}de{'ResetAlarm'}", "", false, false)]
         public IACContainerTNet<UInt16> ResetAlarm { get; set; }
 
         #endregion

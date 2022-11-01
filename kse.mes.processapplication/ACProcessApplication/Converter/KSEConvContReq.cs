@@ -36,7 +36,7 @@ namespace kse.mes.processapplication
         #region Properties
         #region Read-Values from PLC
 
-        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false, RemotePropID=25)]
+        [ACPropertyBindingTarget(103, "AlarmCode", "en{'AlarmCode'}de{'AlarmCode'}", "", false, false)]
         public IACContainerTNet<ContReqAlarmCode> AlarmCode { get; set; }
         protected IACPropertyNetTarget _AlarmCode
         {
@@ -50,17 +50,17 @@ namespace kse.mes.processapplication
             get { return AlarmCode.ValueT; }
         }
 
-        [ACPropertyBindingTarget(104, "ContainerInterfaceNr", "en{'ContainerInterfaceNr'}de{'ContainerInterfaceNr'}", "", false, false, RemotePropID=26)]
+        [ACPropertyBindingTarget(104, "ContainerInterfaceNr", "en{'ContainerInterfaceNr'}de{'ContainerInterfaceNr'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerInterfaceNr { get; set; }
 
         #endregion
 
         #region Write-Values to PLC
 
-        [ACPropertyBindingTarget(3, "RequiredPosition", "en{'RequiredPosition'}de{'RequiredPosition'}", "", false, false, RemotePropID=27)]
+        [ACPropertyBindingTarget(3, "RequiredPosition", "en{'RequiredPosition'}de{'RequiredPosition'}", "", false, false)]
         public IACContainerTNet<UInt16> RequiredPosition { get; set; }
 
-        [ACPropertyBindingTarget(4, "ContainerType", "en{'ContainerType'}de{'ContainerType'}", "", false, false, RemotePropID=28)]
+        [ACPropertyBindingTarget(4, "ContainerType", "en{'ContainerType'}de{'ContainerType'}", "", false, false)]
         public IACContainerTNet<UInt16> ContainerType { get; set; }
 
         #endregion
