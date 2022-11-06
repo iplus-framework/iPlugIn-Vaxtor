@@ -38,6 +38,10 @@ namespace sick.mes.processapplication
             return HandleExecuteACMethod_PAERFU6xxxBase(out result, acComponent, acMethodName, acClassMethod, acParameter);
         }
 
+        public override void ActivateRouteItemOnSimulation(RouteItem item, bool switchOff)
+        {
+        }
+
         protected override bool HandleExecuteACMethod(out object result, AsyncMethodInvocationMode invocationMode, string acMethodName, gip.core.datamodel.ACClassMethod acClassMethod, params object[] acParameter)
         {
             return base.HandleExecuteACMethod(out result, invocationMode, acMethodName, acClassMethod, acParameter);
