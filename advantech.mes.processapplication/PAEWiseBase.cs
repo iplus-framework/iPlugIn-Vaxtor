@@ -55,7 +55,7 @@ namespace advantech.mes.processapplication
             if (!CanSend())
             {
                 // [Error50573] ACRestClient not available!
-                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 56, null);
+                //LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 56, null);
             }
 
             return baseResult;
@@ -72,6 +72,13 @@ namespace advantech.mes.processapplication
             }
 
             return baseDeinit;
+        }
+
+        public override bool ACPostInit()
+        {
+            if ((IsSessionConnected as IACPropertyNetTarget).Source == null)
+                IsSessionConnected.ValueT = CanSend();
+            return base.ACPostInit();
         }
 
         #endregion
@@ -495,9 +502,9 @@ namespace advantech.mes.processapplication
             using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
             {
                 WSResponse<string> setFilterResponse = Client.Patch(content, logOutputUrl);
-
                 if (setFilterResponse.Suceeded)
                 {
+                    IsSessionConnected.ValueT = true;
                     WSResponse<Filter> responseFilter = Client.Get<Filter>(logOutputUrl);
                     if (responseFilter.Suceeded)
                     {
@@ -510,6 +517,7 @@ namespace advantech.mes.processapplication
                 }
                 else
                 {
+                    IsSessionConnected.ValueT = false;
                     result.Message = setFilterResponse.Message;
                 }
             }
@@ -531,6 +539,7 @@ namespace advantech.mes.processapplication
                     WSResponse<string> setFilterResponse = Client.Patch(content, logOutputUrl);
                     if (setFilterResponse.Suceeded)
                     {
+                        IsSessionConnected.ValueT = true;
                         WSResponse<Wise4000Data> dataResponse = Client.Get<Wise4000Data>(logMessageUrl);
                         if (dataResponse.Suceeded)
                         {
@@ -543,6 +552,7 @@ namespace advantech.mes.processapplication
                     }
                     else
                     {
+                        IsSessionConnected.ValueT = false;
                         result.Message = setFilterResponse.Message;
                     }
                 }
