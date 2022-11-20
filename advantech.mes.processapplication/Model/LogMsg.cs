@@ -8,6 +8,6 @@ namespace advantech.mes.processapplication
         public string UID { get; set; }
         public DateTime TIM { get; set; }
 
-        public int[][] Record { get; set; }
+        public double[][] Record { get; set; }
     }
 }

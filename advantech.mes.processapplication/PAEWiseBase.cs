@@ -279,7 +279,7 @@ namespace advantech.mes.processapplication
         #region Methods -> ACMethod -> Reset
 
 
-        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 200, true)]
+        [ACMethodInteraction("", "en{'Reset counter'}de{'Zähler zurücksetzen'}", 220, true)]
         public void Reset()
         {
             ResetCounter();
@@ -329,6 +329,7 @@ namespace advantech.mes.processapplication
             catch (Exception ec)
             {
                 LogMessage(eMsgLevel.Exception, "Error50574", nameof(ACInit), 324, ec.Message);
+                Messages.LogException(this.GetACUrl(), "ResetCounter(100)", ec);
             }
 
             return success;
@@ -341,9 +342,9 @@ namespace advantech.mes.processapplication
 
         #endregion
 
-        #region Methods -> ACMethod -> Available
+        #region Methods -> ACMethod -> Test Connection
 
-        [ACMethodInteraction("", "en{'Available'}de{'Verfügare'}", 210, true)]
+        [ACMethodInteraction("", "en{'Test Connection'}de{'Verbindung testen'}", 200, true)]
         public void Available()
         {
             if (!IsEnabledAvailable())
@@ -356,7 +357,7 @@ namespace advantech.mes.processapplication
             return CanSend();
         }
 
-        [ACMethodInfo("", "en{'Available'}de{'Verfügare'}", 211, true)]
+        [ACMethodInfo("", "en{'Test Connection'}de{'Verbindung testen'}", 201, true)]
         public long ReadAvailable()
         {
             long result = 0;
@@ -384,6 +385,7 @@ namespace advantech.mes.processapplication
             catch (Exception ec)
             {
                 LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 379, ec.Message);
+                Messages.LogException(this.GetACUrl(), "ReadAvailable(100)", ec);
             }
 
             return result;
@@ -399,7 +401,7 @@ namespace advantech.mes.processapplication
         #region Methods -> ACMethod -> Read
 
 
-        [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 220, true)]
+        [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 210, true)]
         public void Read()
         {
             IsResetCounterSuccessfully = true;
@@ -455,6 +457,7 @@ namespace advantech.mes.processapplication
             catch (Exception ec)
             {
                 LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 450, ec.Message);
+                Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
             }
 
 
@@ -573,35 +576,45 @@ namespace advantech.mes.processapplication
             List<ChannelResult> result = new List<ChannelResult>();
             if (data.LogMsg != null)
             {
-                foreach (LogMsg logMsg in data.LogMsg)
+                try
                 {
-                    if (logMsg.Record != null)
+                    foreach (LogMsg logMsg in data.LogMsg)
                     {
-                        foreach (int[] entry in logMsg.Record)
+                        if (logMsg.Record != null)
                         {
-                            if (entry.Length == 4)
+                            foreach (double[] entry in logMsg.Record)
                             {
-                                int channel = entry[1];
-                                int measureValue = entry[3];
-
-                                if (measureValue > SensorMinCountValue)
+                                if (entry.Length == 4)
                                 {
-                                    ChannelResult channelResult = result.Where(c => c.Channel == channel).FirstOrDefault();
-                                    if (channelResult == null)
+                                    int channel = Convert.ToInt32(entry[1]);
+                                    int ioType = Convert.ToInt32(entry[2]);
+                                    if (ioType != 7) // AI-Value
+                                        continue;
+                                    double measureValue = entry[3];
+
+                                    if (measureValue > SensorMinCountValue)
                                     {
-                                        channelResult = new ChannelResult();
-                                        channelResult.Channel = channel;
-                                        channelResult.Count = 1;
-                                        result.Add(channelResult);
-                                    }
-                                    else
-                                    {
-                                        channelResult.Count += 1;
+                                        ChannelResult channelResult = result.Where(c => c.Channel == channel).FirstOrDefault();
+                                        if (channelResult == null)
+                                        {
+                                            channelResult = new ChannelResult();
+                                            channelResult.Channel = channel;
+                                            channelResult.Count = 1;
+                                            result.Add(channelResult);
+                                        }
+                                        else
+                                        {
+                                            channelResult.Count += 1;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }
+                catch (Exception ex) 
+                {
+                    Messages.LogException(this.GetACUrl(), "CountData", ex);
                 }
             }
 
