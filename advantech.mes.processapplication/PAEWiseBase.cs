@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using static gip.core.communication.ISOonTCP.PLC;
 
 namespace advantech.mes.processapplication
 {
@@ -417,7 +418,7 @@ namespace advantech.mes.processapplication
 
         [ACMethodInfo("", "en{'Count'}de{'Zählen'}", 221, true)]
         public List<ChannelResult> ReadCounter()
-        {
+        {            
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
             List<ChannelResult> result = null;
@@ -426,40 +427,47 @@ namespace advantech.mes.processapplication
             {
                 // [Error50573] ACRestClient not available!
                 LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 419, null);
-                return result;
-            }
 
-
-            try
-            {
-
-                WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
-                if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
-                {
-                    result = CountData(dataResult.Data);
-                    if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
-                    {
-                        ExportData(ExportDir, FileName, dataResult.Data);
-                    }
-
-                    string json = JsonConvert.SerializeObject(result);
-                    MeasureText.ValueT = json;
-                }
+                PABase parentPAObj = FindParentComponent<PABase>();
+                if (parentPAObj != null && parentPAObj.IsSimulationOn)
+                    result = SimulateCountData();
                 else
-                {
-                    // Error50575
-                    // rror by reading counter! Error {0}.
-                    LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 443, dataResult.Message?.Message);
-                }
-
-                IsResetCounterSuccessfully = null;
+                    return result;
             }
-            catch (Exception ec)
+            else
             {
-                LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 450, ec.Message);
-                Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
-            }
 
+                try
+                {
+                    WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
+                    if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
+                    {
+                        result = CountData(dataResult.Data);
+                        if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                        {
+                            ExportData(ExportDir, FileName, dataResult.Data);
+                        }
+
+                        string json = JsonConvert.SerializeObject(result);
+                        MeasureText.ValueT = json;
+                    }
+                    else
+                    {
+                        // Error50575
+                        // rror by reading counter! Error {0}.
+                        LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 443, dataResult.Message?.Message);
+                        PABase parentPAObj = FindParentComponent<PABase>();
+                        if (parentPAObj != null && parentPAObj.IsSimulationOn)
+                            result = SimulateCountData();
+                    }
+                }
+                catch (Exception ec)
+                {
+                    LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 450, ec.Message);
+                    Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
+                }
+            }
+            IsResetCounterSuccessfully = null;
 
             return result;
         }
@@ -619,6 +627,18 @@ namespace advantech.mes.processapplication
             }
 
             return result;
+        }
+
+
+        public static List<ChannelResult> SimulateCountData()
+        {
+            return new List<ChannelResult>()
+            {
+                new ChannelResult(){ Channel = 0, Count = 1 },
+                new ChannelResult(){ Channel = 1, Count = 1 },
+                new ChannelResult(){ Channel = 2, Count = 1 },
+                new ChannelResult(){ Channel = 3, Count = 1 }
+            };
         }
 
         #endregion
