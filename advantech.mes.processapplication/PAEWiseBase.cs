@@ -239,25 +239,6 @@ namespace advantech.mes.processapplication
             }
         }
 
-        private bool? _IsResetCounterSuccessfully;
-
-        [ACPropertyInfo(true, 205, "", "en{'Reset successfully'}de{'Zurücksetzen erfolgreich'}", "", false)]
-        public bool? IsResetCounterSuccessfully
-        {
-            get
-            {
-                return _IsResetCounterSuccessfully;
-            }
-            set
-            {
-                if (_IsResetCounterSuccessfully != value)
-                {
-                    _IsResetCounterSuccessfully = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         private ACDelegateQueue _DelegateQueue = null;
         public ACDelegateQueue DelegateQueue
         {
@@ -307,7 +288,6 @@ namespace advantech.mes.processapplication
 
             try
             {
-                IsResetCounterSuccessfully = null;
                 FilterClear filter = new FilterClear();
                 string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
                 using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
@@ -325,7 +305,6 @@ namespace advantech.mes.processapplication
                         LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 317, response.Message?.Message);
                     }
                 }
-                IsResetCounterSuccessfully = success;
             }
             catch (Exception ec)
             {
@@ -405,7 +384,6 @@ namespace advantech.mes.processapplication
         [ACMethodInteraction("", "en{'Count'}de{'Zählen'}", 210, true)]
         public void Read()
         {
-            IsResetCounterSuccessfully = true;
             if (!IsEnabledRead())
                 return;
             ReadCounter();
@@ -467,14 +445,13 @@ namespace advantech.mes.processapplication
                     Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
                 }
             }
-            IsResetCounterSuccessfully = null;
 
             return result;
         }
 
         public bool IsEnabledReadCounter()
         {
-            return CanSend() && IsResetCounterSuccessfully != null && IsResetCounterSuccessfully.Value;
+            return CanSend();
         }
 
         #endregion
