@@ -14,12 +14,14 @@ namespace advantech.mes.testwebapi.Controllers
         [HttpGet(Name = "log_message_get")]
         public IActionResult Get()
         {
-
+            string content = "";
             Assembly assembly = Assembly.GetExecutingAssembly();
             string name = assembly.GetManifestResourceNames().SingleOrDefault(n => n.EndsWith("log_message.json", StringComparison.InvariantCultureIgnoreCase));
-            using Stream stream = assembly.GetManifestResourceStream(name);
-            StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
-            var content = reader.ReadToEnd();
+            using(Stream stream = assembly.GetManifestResourceStream(name))
+            {
+                StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+                content = reader.ReadToEnd();
+            }
             return Content(content, "text/json", Encoding.UTF8);
         }
     }

@@ -9,11 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using static gip.core.communication.ISOonTCP.PLC;
+using System.Threading.Tasks;
 
 namespace advantech.mes.processapplication
 {
@@ -55,8 +53,11 @@ namespace advantech.mes.processapplication
 
             if (!CanSend())
             {
-                // [Error50573] ACRestClient not available!
-                //LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 56, null);
+
+                // Error50585
+                // ACRestClient not available!
+                // ACRestClient nicht verfügbar!
+                LogMessage(eMsgLevel.Error, "Error50585", nameof(ACInit), 56, null);
             }
 
             return baseResult;
@@ -197,6 +198,9 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingSource(212, "MeasureText", "en{'Measure'}de{'Messen'}", "", false, true)]
         public IACContainerTNet<string> MeasureText { get; set; }
 
+        [ACPropertyBindingSource(212, "MeasureTime", "en{'Measure Time'}de{'Messen Time'}", "", false, true)]
+        public IACContainerTNet<DateTime?> MeasureTime { get; set; }
+
         #endregion
 
         #region Properties
@@ -278,11 +282,14 @@ namespace advantech.mes.processapplication
             bool success = false;
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
+            MeasureTime.ValueT = null;
 
             if (!IsEnabledResetCounter())
             {
-                // [Error50573] ACRestClient not available!
-                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 296, null);
+                // Error50586.
+                // Unable to reset! Counter is not ready.
+                // Zurücksetzen nicht möglich! Zähler ist nicht bereit.
+                LogMessage(eMsgLevel.Error, "Error50586", nameof(ACInit), 296, null);
                 return false;
             }
 
@@ -292,7 +299,7 @@ namespace advantech.mes.processapplication
                 string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
                 using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
                 {
-                    WSResponse<string> response = this.Client.Patch<string>(content, LogClearUrl);
+                    WSResponse<string> response = this.Client.Patch(content, LogClearUrl);
 
                     if (response.Suceeded)
                     {
@@ -300,15 +307,19 @@ namespace advantech.mes.processapplication
                     }
                     else
                     {
-                        // Error50574
+                        // Error50587.
                         // Error by resetting counter! Error {0}.
-                        LogMessage(eMsgLevel.Error, "Error50574", nameof(ACInit), 317, response.Message?.Message);
+                        // Fehler beim Zurücksetzen des Zählers! Fehler {0}.
+                        LogMessage(eMsgLevel.Error, "Error50587", nameof(ACInit), 317, response.Message?.Message);
                     }
                 }
             }
             catch (Exception ec)
             {
-                LogMessage(eMsgLevel.Exception, "Error50574", nameof(ACInit), 324, ec.Message);
+                // Error50587.
+                // Error by resetting counter! Error {0}.
+                // Fehler beim Zurücksetzen des Zählers! Fehler {0}.
+                LogMessage(eMsgLevel.Exception, "Error50587", nameof(ACInit), 324, ec.Message);
                 Messages.LogException(this.GetACUrl(), "ResetCounter(100)", ec);
             }
 
@@ -343,6 +354,7 @@ namespace advantech.mes.processapplication
             long result = 0;
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
+            MeasureTime.ValueT = null;
 
             if (!IsEnableReadAvailable())
                 return 0;
@@ -354,17 +366,22 @@ namespace advantech.mes.processapplication
                 {
                     result = amountResult.Data ?? 0;
                     MeasureText.ValueT = result.ToString();
+                    MeasureTime.ValueT = DateTime.Now;
                 }
                 else
                 {
-                    // Error50575
-                    // rror by reading counter! Error {0}.
-                    LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 374, amountResult.Message?.Message);
+                    // Error50588
+                    // Error by reading counter! Error {0}.
+                    // Fehler beim Lesen des Zählers! Fehler {0}.
+                    LogMessage(eMsgLevel.Error, "Error50588", nameof(ACInit), 374, amountResult.Message?.Message);
                 }
             }
             catch (Exception ec)
             {
-                LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 379, ec.Message);
+                // Error50588
+                // Error by reading counter! Error {0}.
+                // Fehler beim Lesen des Zählers! Fehler {0}.
+                LogMessage(eMsgLevel.Exception, "Error50588", nameof(ACInit), 379, ec.Message);
                 Messages.LogException(this.GetACUrl(), "ReadAvailable(100)", ec);
             }
 
@@ -396,15 +413,19 @@ namespace advantech.mes.processapplication
 
         [ACMethodInfo("", "en{'Count'}de{'Zählen'}", 221, true)]
         public List<ChannelResult> ReadCounter()
-        {            
+        {
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
+            MeasureTime.ValueT = null;
+
             List<ChannelResult> result = null;
 
             if (!IsEnabledReadCounter())
             {
-                // [Error50573] ACRestClient not available!
-                LogMessage(eMsgLevel.Error, "Error50573", nameof(ACInit), 419, null);
+                // Error50586.
+                // Unable to reset! Counter is not ready.
+                // Zurücksetzen nicht möglich! Zähler ist nicht bereit.
+                LogMessage(eMsgLevel.Error, "Error50586", nameof(ACInit), 421, null);
 
                 PABase parentPAObj = FindParentComponent<PABase>();
                 if (parentPAObj != null && parentPAObj.IsSimulationOn)
@@ -414,26 +435,22 @@ namespace advantech.mes.processapplication
             }
             else
             {
-
                 try
                 {
                     WSResponse<Wise4000Data> dataResult = GetData(LogOutputUrl, LogMessageUrl);
                     if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
                     {
                         result = CountData(dataResult.Data);
-                        if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
-                        {
-                            ExportData(ExportDir, FileName, dataResult.Data);
-                        }
-
                         string json = JsonConvert.SerializeObject(result);
                         MeasureText.ValueT = json;
+                        MeasureTime.ValueT = DateTime.Now;
                     }
                     else
                     {
-                        // Error50575
-                        // rror by reading counter! Error {0}.
-                        LogMessage(eMsgLevel.Error, "Error50575", nameof(ACInit), 443, dataResult.Message?.Message);
+                        // Error50588
+                        // Error by reading counter! Error {0}.
+                        // Fehler beim Lesen des Zählers! Fehler {0}.
+                        LogMessage(eMsgLevel.Error, "Error50588", nameof(ACInit), 443, dataResult.Message?.Message);
                         PABase parentPAObj = FindParentComponent<PABase>();
                         if (parentPAObj != null && parentPAObj.IsSimulationOn)
                             result = SimulateCountData();
@@ -441,7 +458,10 @@ namespace advantech.mes.processapplication
                 }
                 catch (Exception ec)
                 {
-                    LogMessage(eMsgLevel.Exception, "Error50575", nameof(ACInit), 450, ec.Message);
+                    // Error50588
+                    // Error by reading counter! Error {0}.
+                    // Fehler beim Lesen des Zählers! Fehler {0}.
+                    LogMessage(eMsgLevel.Exception, "Error50588", nameof(ACInit), 450, ec.Message);
                     Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
                 }
             }
@@ -467,14 +487,13 @@ namespace advantech.mes.processapplication
 
         #region Methods -> Others
 
-        public void ExportData(string exportDir, string fileName, Wise4000Data data)
+        public void ExportData(string exportDir, string fileName, string jsonContent)
         {
             try
             {
                 string file = string.Format(fileName, DateTime.Now);
                 string fullFileName = Path.Combine(exportDir, file);
-                string json = JsonConvert.SerializeObject(data);
-                File.WriteAllText(fullFileName, json);
+                File.WriteAllText(fullFileName, jsonContent);
             }
             catch (Exception ec)
             {
@@ -525,10 +544,16 @@ namespace advantech.mes.processapplication
                 using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
                 {
                     WSResponse<string> setFilterResponse = Client.Patch(content, logOutputUrl);
+
                     if (setFilterResponse.Suceeded)
                     {
                         IsSessionConnected.ValueT = true;
-                        WSResponse<Wise4000Data> dataResponse = Client.Get<Wise4000Data>(logMessageUrl);
+
+                        WSResponse<Wise4000Data> dataResponse = new WSResponse<Wise4000Data>();
+                        Task<WSResponse<Wise4000Data>> dataResponseRequest = GetAsyncWise<Wise4000Data>(Client, logMessageUrl);
+                        dataResponseRequest.Wait();
+                        dataResponse = dataResponseRequest.Result;
+
                         if (dataResponse.Suceeded)
                         {
                             result.Data = dataResponse.Data;
@@ -597,7 +622,7 @@ namespace advantech.mes.processapplication
                         }
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Messages.LogException(this.GetACUrl(), "CountData", ex);
                 }
@@ -688,6 +713,29 @@ namespace advantech.mes.processapplication
             Messages.LogMessageMsg(msg);
             OnNewAlarmOccurred(IsReadingCounterAlarm, msg, true);
             return msg;
+        }
+
+        private async Task<WSResponse<TResult>> GetAsyncWise<TResult>(ACRestClient aCRestClient, string url)
+        {
+            HttpClient client = aCRestClient.Client;
+            if (client == null)
+            {
+                return await Task.FromResult(new WSResponse<TResult>(new Msg(eMsgLevel.Error, "Disconnected")));
+            }
+
+            HttpResponseMessage response = await client.GetAsync(new Uri(url, UriKind.Relative));
+            if (response.IsSuccessStatusCode)
+            {
+                aCRestClient.IsConnected.ValueT = true;
+                string json = await response.Content.ReadAsStringAsync();
+                if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                {
+                    ExportData(ExportDir, FileName, json);
+                }
+                return new WSResponse<TResult>(await Task.Run(() => JsonConvert.DeserializeObject<TResult>(json)), response.StatusCode);
+            }
+
+            return await Task.FromResult(new WSResponse<TResult>(new Msg(eMsgLevel.Failure, $"{response.ReasonPhrase},{response.StatusCode}")));
         }
 
         #endregion

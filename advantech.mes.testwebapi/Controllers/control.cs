@@ -4,6 +4,8 @@ using System.Text;
 
 namespace advantech.mes.testwebapi.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
     public class control : Controller
     {
         [HttpPatch(Name = "control_clear")]
