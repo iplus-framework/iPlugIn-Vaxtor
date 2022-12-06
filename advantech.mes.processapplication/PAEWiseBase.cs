@@ -199,7 +199,7 @@ namespace advantech.mes.processapplication
         public IACContainerTNet<string> MeasureText { get; set; }
 
         [ACPropertyBindingSource(212, "MeasureTime", "en{'Measure Time'}de{'Messen Time'}", "", false, true)]
-        public IACContainerTNet<DateTime?> MeasureTime { get; set; }
+        public IACContainerTNet<DateTime> MeasureTime { get; set; }
 
         #endregion
 
@@ -282,7 +282,7 @@ namespace advantech.mes.processapplication
             bool success = false;
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
-            MeasureTime.ValueT = null;
+            MeasureTime.ValueT = DateTime.MinValue;
 
             if (!IsEnabledResetCounter())
             {
@@ -354,7 +354,7 @@ namespace advantech.mes.processapplication
             long result = 0;
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
-            MeasureTime.ValueT = null;
+            MeasureTime.ValueT = DateTime.MinValue;
 
             if (!IsEnableReadAvailable())
                 return 0;
@@ -416,7 +416,7 @@ namespace advantech.mes.processapplication
         {
             ErrorText.ValueT = null;
             MeasureText.ValueT = null;
-            MeasureTime.ValueT = null;
+            MeasureTime.ValueT = DateTime.MinValue;
 
             List<ChannelResult> result = null;
 
