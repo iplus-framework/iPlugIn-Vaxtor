@@ -198,7 +198,7 @@ namespace advantech.mes.processapplication
         [ACPropertyBindingSource(212, "MeasureText", "en{'Measure'}de{'Messen'}", "", false, true)]
         public IACContainerTNet<string> MeasureText { get; set; }
 
-        [ACPropertyBindingSource(212, "MeasureTime", "en{'Measure Time'}de{'Messen Time'}", "", false, true)]
+        [ACPropertyBindingSource(213, "MeasureTime", "en{'Measure Time'}de{'Messen Time'}", "", false, true)]
         public IACContainerTNet<DateTime> MeasureTime { get; set; }
 
         #endregion
@@ -289,7 +289,7 @@ namespace advantech.mes.processapplication
                 // Error50586.
                 // Unable to reset! Counter is not ready.
                 // Zurücksetzen nicht möglich! Zähler ist nicht bereit.
-                LogMessage(eMsgLevel.Error, "Error50586", nameof(ACInit), 296, null);
+                LogMessage(eMsgLevel.Error, "Error50586", nameof(ResetCounter), 296, null);
                 return false;
             }
 
@@ -310,7 +310,7 @@ namespace advantech.mes.processapplication
                         // Error50587.
                         // Error by resetting counter! Error {0}.
                         // Fehler beim Zurücksetzen des Zählers! Fehler {0}.
-                        LogMessage(eMsgLevel.Error, "Error50587", nameof(ACInit), 317, response.Message?.Message);
+                        LogMessage(eMsgLevel.Error, "Error50587", nameof(ReadCounter), 317, response.Message?.Message);
                     }
                 }
             }
@@ -319,7 +319,7 @@ namespace advantech.mes.processapplication
                 // Error50587.
                 // Error by resetting counter! Error {0}.
                 // Fehler beim Zurücksetzen des Zählers! Fehler {0}.
-                LogMessage(eMsgLevel.Exception, "Error50587", nameof(ACInit), 324, ec.Message);
+                LogMessage(eMsgLevel.Exception, "Error50587", nameof(ReadCounter), 324, ec.Message);
                 Messages.LogException(this.GetACUrl(), "ResetCounter(100)", ec);
             }
 
@@ -373,7 +373,7 @@ namespace advantech.mes.processapplication
                     // Error50588
                     // Error by reading counter! Error {0}.
                     // Fehler beim Lesen des Zählers! Fehler {0}.
-                    LogMessage(eMsgLevel.Error, "Error50588", nameof(ACInit), 374, amountResult.Message?.Message);
+                    LogMessage(eMsgLevel.Error, "Error50588", nameof(ReadAvailable), 374, amountResult.Message?.Message);
                 }
             }
             catch (Exception ec)
@@ -381,7 +381,7 @@ namespace advantech.mes.processapplication
                 // Error50588
                 // Error by reading counter! Error {0}.
                 // Fehler beim Lesen des Zählers! Fehler {0}.
-                LogMessage(eMsgLevel.Exception, "Error50588", nameof(ACInit), 379, ec.Message);
+                LogMessage(eMsgLevel.Exception, "Error50588", nameof(ReadAvailable), 379, ec.Message);
                 Messages.LogException(this.GetACUrl(), "ReadAvailable(100)", ec);
             }
 
@@ -425,7 +425,7 @@ namespace advantech.mes.processapplication
                 // Error50586.
                 // Unable to reset! Counter is not ready.
                 // Zurücksetzen nicht möglich! Zähler ist nicht bereit.
-                LogMessage(eMsgLevel.Error, "Error50586", nameof(ACInit), 421, null);
+                LogMessage(eMsgLevel.Error, "Error50586", nameof(ReadCounter), 421, null);
 
                 PABase parentPAObj = FindParentComponent<PABase>();
                 if (parentPAObj != null && parentPAObj.IsSimulationOn)
@@ -450,7 +450,7 @@ namespace advantech.mes.processapplication
                         // Error50588
                         // Error by reading counter! Error {0}.
                         // Fehler beim Lesen des Zählers! Fehler {0}.
-                        LogMessage(eMsgLevel.Error, "Error50588", nameof(ACInit), 443, dataResult.Message?.Message);
+                        LogMessage(eMsgLevel.Error, "Error50588", nameof(ReadCounter), 443, dataResult.Message?.Message);
                         PABase parentPAObj = FindParentComponent<PABase>();
                         if (parentPAObj != null && parentPAObj.IsSimulationOn)
                             result = SimulateCountData();
@@ -461,7 +461,7 @@ namespace advantech.mes.processapplication
                     // Error50588
                     // Error by reading counter! Error {0}.
                     // Fehler beim Lesen des Zählers! Fehler {0}.
-                    LogMessage(eMsgLevel.Exception, "Error50588", nameof(ACInit), 450, ec.Message);
+                    LogMessage(eMsgLevel.Exception, "Error50588", nameof(ReadCounter), 450, ec.Message);
                     Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
                 }
             }
