@@ -441,9 +441,6 @@ namespace advantech.mes.processapplication
                     if (dataResult.Data != null && (dataResult.Message == null || dataResult.Message.MessageLevel < eMsgLevel.Failure))
                     {
                         result = CountData(dataResult.Data);
-                        string json = JsonConvert.SerializeObject(result);
-                        MeasureText.ValueT = json;
-                        MeasureTime.ValueT = DateTime.Now;
                     }
                     else
                     {
@@ -540,8 +537,8 @@ namespace advantech.mes.processapplication
                 Filter filter = new Filter();
                 filter.FltrEnum = FltrEnum.AmountFilter;
                 filter.Amt = amountResult.Data.Value;
-                string requestJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
-                using (var content = new StringContent(requestJson, Encoding.UTF8, "application/json"))
+                string requestAmountJson = JsonConvert.SerializeObject(filter, DefaultJsonSerializerSettings);
+                using (var content = new StringContent(requestAmountJson, Encoding.UTF8, "application/json"))
                 {
                     WSResponse<string> setFilterResponse = Client.Patch(content, logOutputUrl);
 
@@ -549,14 +546,23 @@ namespace advantech.mes.processapplication
                     {
                         IsSessionConnected.ValueT = true;
 
-                        WSResponse<Wise4000Data> dataResponse = new WSResponse<Wise4000Data>();
-                        Task<WSResponse<Wise4000Data>> dataResponseRequest = GetAsyncWise<Wise4000Data>(Client, logMessageUrl);
+                        WSResponse<string> dataResponse = new WSResponse<string>();
+                        Task<WSResponse<string>> dataResponseRequest = GetAsyncWise<string>(Client, logMessageUrl);
                         dataResponseRequest.Wait();
                         dataResponse = dataResponseRequest.Result;
 
+                        if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                        {
+                            ExportData(ExportDir, FileName, dataResponse.Data);
+                        }
+
                         if (dataResponse.Suceeded)
                         {
-                            result.Data = dataResponse.Data;
+                            Wise4000Data data = JsonConvert.DeserializeObject<Wise4000Data>(dataResponse.Data, DefaultJsonSerializerSettings);
+                            result.Data = data;
+
+                            MeasureText.ValueT = dataResponse.Data;
+                            MeasureTime.ValueT = DateTime.Now;
                         }
                         else
                         {
@@ -715,12 +721,12 @@ namespace advantech.mes.processapplication
             return msg;
         }
 
-        private async Task<WSResponse<TResult>> GetAsyncWise<TResult>(ACRestClient aCRestClient, string url)
+        private async Task<WSResponse<string>> GetAsyncWise<TResult>(ACRestClient aCRestClient, string url)
         {
             HttpClient client = aCRestClient.Client;
             if (client == null)
             {
-                return await Task.FromResult(new WSResponse<TResult>(new Msg(eMsgLevel.Error, "Disconnected")));
+                return await Task.FromResult(new WSResponse<string>(new Msg(eMsgLevel.Error, "Disconnected")));
             }
 
             HttpResponseMessage response = await client.GetAsync(new Uri(url, UriKind.Relative));
@@ -728,14 +734,11 @@ namespace advantech.mes.processapplication
             {
                 aCRestClient.IsConnected.ValueT = true;
                 string json = await response.Content.ReadAsStringAsync();
-                if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
-                {
-                    ExportData(ExportDir, FileName, json);
-                }
-                return new WSResponse<TResult>(await Task.Run(() => JsonConvert.DeserializeObject<TResult>(json)), response.StatusCode);
+
+                return new WSResponse<string>(json, response.StatusCode);
             }
 
-            return await Task.FromResult(new WSResponse<TResult>(new Msg(eMsgLevel.Failure, $"{response.ReasonPhrase},{response.StatusCode}")));
+            return await Task.FromResult(new WSResponse<string>(new Msg(eMsgLevel.Failure, $"{response.ReasonPhrase},{response.StatusCode}")));
         }
 
         #endregion
