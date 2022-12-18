@@ -24,13 +24,14 @@ namespace advantech.mes.processapplication
 
         public PAEWiseBase(gip.core.datamodel.ACClass acType, gip.core.datamodel.IACObject content, gip.core.datamodel.IACObject parentACObject, gip.core.datamodel.ACValueList parameter, string acIdentifier = "") : base(acType, content, parentACObject, parameter, acIdentifier)
         {
-            _StoreRecivedData = new ACPropertyConfigValue<bool>(this, "StoreRecivedData", false);
-            _ExportDir = new ACPropertyConfigValue<string>(this, "ExportDir", "");
-            _FileName = new ACPropertyConfigValue<string>(this, "FileName", "advantec_{0:yyyyMMddHHmmssfff}.json");
-            _SensorMinCountValue = new ACPropertyConfigValue<int>(this, "SensorMinCountValue", 30000);
-            _LogOutputUrl = new ACPropertyConfigValue<string>(this, "LogOutputUrl", "log_output");
-            _LogMessageUrl = new ACPropertyConfigValue<string>(this, "LogMessageUrl", "log_message");
-            _LogClearUrl = new ACPropertyConfigValue<string>(this, "LogClearUrl", "control");
+            _StoreRecivedData = new ACPropertyConfigValue<bool>(this, nameof(StoreRecivedData), false);
+            _ExportDir = new ACPropertyConfigValue<string>(this, nameof(ExportDir), "");
+            _JsonFileName = new ACPropertyConfigValue<string>(this, nameof(JsonFileName), "advantec_{0:yyyyMMddHHmmssfff}.json");
+            _DataFileName = new ACPropertyConfigValue<string>(this, nameof(DataFileName), "data_{0:yyyyMMddHHmmssfff}.json");
+            _SensorMinCountValue = new ACPropertyConfigValue<int>(this, nameof(SensorMinCountValue), 30000);
+            _LogOutputUrl = new ACPropertyConfigValue<string>(this, nameof(LogOutputUrl), "log_output");
+            _LogMessageUrl = new ACPropertyConfigValue<string>(this, nameof(LogMessageUrl), "log_message");
+            _LogClearUrl = new ACPropertyConfigValue<string>(this, nameof(LogClearUrl), "control");
         }
 
         public override bool ACInit(Global.ACStartTypes startChildMode = Global.ACStartTypes.Automatic)
@@ -45,7 +46,8 @@ namespace advantech.mes.processapplication
 
             _ = StoreRecivedData;
             _ = ExportDir;
-            _ = FileName;
+            _ = JsonFileName;
+            _ = DataFileName;
             _ = SensorMinCountValue;
             _ = LogOutputUrl;
             _ = LogMessageUrl;
@@ -115,17 +117,31 @@ namespace advantech.mes.processapplication
             }
         }
 
-        private ACPropertyConfigValue<string> _FileName;
-        [ACPropertyConfig("FileName")]
-        public string FileName
+        private ACPropertyConfigValue<string> _JsonFileName;
+        [ACPropertyConfig("JsonFileName")]
+        public string JsonFileName
         {
             get
             {
-                return _FileName.ValueT;
+                return _JsonFileName.ValueT;
             }
             set
             {
-                _FileName.ValueT = value;
+                _JsonFileName.ValueT = value;
+            }
+        }
+
+        private ACPropertyConfigValue<string> _DataFileName;
+        [ACPropertyConfig("DataFileName")]
+        public string DataFileName
+        {
+            get
+            {
+                return _DataFileName.ValueT;
+            }
+            set
+            {
+                _DataFileName.ValueT = value;
             }
         }
 
@@ -484,13 +500,32 @@ namespace advantech.mes.processapplication
 
         #region Methods -> Others
 
-        public void ExportData(string exportDir, string fileName, string jsonContent)
+        public void ExportJsonFile(string jsonContent)
         {
+            if (string.IsNullOrEmpty(ExportDir) || string.IsNullOrEmpty(JsonFileName) || !Directory.Exists(ExportDir))
+                return;
             try
             {
-                string file = string.Format(fileName, DateTime.Now);
-                string fullFileName = Path.Combine(exportDir, file);
+                string file = string.Format(JsonFileName, DateTime.Now);
+                string fullFileName = Path.Combine(ExportDir, file);
                 File.WriteAllText(fullFileName, jsonContent);
+            }
+            catch (Exception ec)
+            {
+                Messages.LogException(GetACUrl(), "ExportData(10)", ec);
+            }
+        }
+
+
+        public void ExportDataFile(string jsonData)
+        {
+            if(string.IsNullOrEmpty(ExportDir) || string.IsNullOrEmpty(DataFileName) || !Directory.Exists(ExportDir))
+                return;
+            try
+            {
+                string file = string.Format(DataFileName, DateTime.Now);
+                string fullFileName = Path.Combine(ExportDir, file);
+                File.WriteAllText(fullFileName, jsonData);
             }
             catch (Exception ec)
             {
@@ -546,27 +581,29 @@ namespace advantech.mes.processapplication
                     {
                         IsSessionConnected.ValueT = true;
 
-                        WSResponse<string> dataResponse = new WSResponse<string>();
                         Task<WSResponse<string>> dataResponseRequest = GetAsyncWise<string>(Client, logMessageUrl);
                         dataResponseRequest.Wait();
-                        dataResponse = dataResponseRequest.Result;
 
-                        if (StoreRecivedData && !string.IsNullOrEmpty(ExportDir) && !string.IsNullOrEmpty(FileName) && Directory.Exists(ExportDir))
+                        WSResponse<string> getCountResponse = dataResponseRequest.Result;
+                        string countDataJson = getCountResponse.Data;
+
+
+                        if (StoreRecivedData)
                         {
-                            ExportData(ExportDir, FileName, dataResponse.Data);
+                            ExportJsonFile(countDataJson);
                         }
 
-                        if (dataResponse.Suceeded)
+                        if (getCountResponse.Suceeded)
                         {
-                            Wise4000Data data = JsonConvert.DeserializeObject<Wise4000Data>(dataResponse.Data, DefaultJsonSerializerSettings);
+                            Wise4000Data data = JsonConvert.DeserializeObject<Wise4000Data>(countDataJson, DefaultJsonSerializerSettings);
                             result.Data = data;
 
-                            MeasureText.ValueT = dataResponse.Data;
+                            MeasureText.ValueT = countDataJson;
                             MeasureTime.ValueT = DateTime.Now;
                         }
                         else
                         {
-                            result.Message = dataResponse.Message;
+                            result.Message = getCountResponse.Message;
                         }
                     }
                     else
