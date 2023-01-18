@@ -53,15 +53,6 @@ namespace advantech.mes.processapplication
             _ = LogMessageUrl;
             _ = LogClearUrl;
 
-            if (!CanSend())
-            {
-
-                // Error50585
-                // ACRestClient not available!
-                // ACRestClient nicht verfügbar!
-                LogMessage(eMsgLevel.Error, "Error50585", nameof(ACInit), 56, null);
-            }
-
             return baseResult;
         }
 
