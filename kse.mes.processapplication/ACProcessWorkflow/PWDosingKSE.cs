@@ -495,7 +495,7 @@ namespace kse.mes.processapplication
                 }
                 IList<Facility> possibleSilos;
                 RouteQueryParams queryParams = new RouteQueryParams(RouteQueryPurpose.StartDosing, ACPartslistManager.SearchMode.SilosWithOutwardEnabled, null, null, ExcludedSilos);
-                IEnumerable<Route> routes = GetRoutes(relation, dbApp, dbIPlus, queryParams, out possibleSilos);
+                IEnumerable<Route> routes = GetRoutes(relation, dbApp, dbIPlus, queryParams, null, out possibleSilos);
                 if (routes != null && routes.Any())
                 {
                     var silo = possibleSilos.FirstOrDefault();
