@@ -454,7 +454,7 @@ namespace advantech.mes.processapplication
                         // Error50588
                         // Error by reading counter! Error {0}.
                         // Fehler beim Lesen des Zählers! Fehler {0}.
-                        LogMessage(eMsgLevel.Error, "Error50588", nameof(ReadCounter), 443, dataResult.Message?.Message);
+                        LogMessage(eMsgLevel.Error, "Error50588", nameof(ReadCounter) + "(95)", 443, dataResult.Message?.Message);
                         PABase parentPAObj = FindParentComponent<PABase>();
                         if (parentPAObj != null && parentPAObj.IsSimulationOn)
                             result = SimulateCountData();
@@ -466,8 +466,18 @@ namespace advantech.mes.processapplication
                     // Error by reading counter! Error {0}.
                     // Fehler beim Lesen des Zählers! Fehler {0}.
                     LogMessage(eMsgLevel.Exception, "Error50588", nameof(ReadCounter), 450, ec.Message);
-                    Messages.LogException(this.GetACUrl(), "ReadCounter(100)", ec);
+                    Messages.LogException(this.GetACUrl(), nameof(ReadCounter) + "(100)", ec);
                 }
+            }
+
+            if (StoreRecivedData && result != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (ChannelResult chResult in result)
+                {
+                    sb.AppendLine(chResult.ToString());
+                }
+                Messages.LogDebug(this.GetACUrl(), nameof(ReadCounter) + "(90)", sb.ToString());
             }
 
             return result;
