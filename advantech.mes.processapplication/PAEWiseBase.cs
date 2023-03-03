@@ -680,10 +680,10 @@ namespace advantech.mes.processapplication
         {
             return new List<ChannelResult>()
             {
-                new ChannelResult(){ Channel = 0, Count = 1 },
-                new ChannelResult(){ Channel = 1, Count = 1 },
-                new ChannelResult(){ Channel = 2, Count = 1 },
-                new ChannelResult(){ Channel = 3, Count = 1 }
+                new ChannelResult(){ Channel = 0, Count = (new Random()).Next(500) },
+                new ChannelResult(){ Channel = 1, Count = (new Random()).Next(500) },
+                new ChannelResult(){ Channel = 2, Count = (new Random()).Next(500) },
+                new ChannelResult(){ Channel = 3, Count = (new Random()).Next(500) }
             };
         }
 
