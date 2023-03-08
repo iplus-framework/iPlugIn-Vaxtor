@@ -310,6 +310,7 @@ namespace advantech.mes.processapplication
 
                     if (response.Suceeded)
                     {
+                        Messages.LogDebug(this.GetACUrl(), nameof(ResetCounter) + "(10)", "Resetted");
                         success = true;
                     }
                     else
