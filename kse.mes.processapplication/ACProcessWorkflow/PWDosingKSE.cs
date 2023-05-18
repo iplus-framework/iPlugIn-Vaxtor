@@ -328,7 +328,7 @@ namespace kse.mes.processapplication
                         if (dosingRoute != null)
                             dosingRoute.Detach(true);
 
-                        if (!(bool)ExecuteMethod("AfterConfigForACMethodIsSet", acMethod, true, dbApp, null, null, null, null, intermediateSilo))
+                        if (!(bool)ExecuteMethod(nameof(AfterConfigForACMethodIsSet), acMethod, true, dbApp, null, null, null, null, intermediateSilo))
                             return StartNextCompResult.CycleWait;
 
                         if (!acMethod.IsValid())
@@ -375,6 +375,7 @@ namespace kse.mes.processapplication
 
                         CachedEmptySiloHandlingOption = null;
                         AcknowledgeAlarms();
+                        ExecuteMethod(nameof(OnACMethodSended), acMethod, true, dbApp, null, null, null, null, intermediateSilo, responsibleFunc);
                         return StartNextCompResult.NextCompStarted;
                     }
                 }
