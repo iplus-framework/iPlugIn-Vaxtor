@@ -547,14 +547,15 @@ namespace soehnle.mes.processapplication
 
         public override Msg OnRegisterAlibiWeight(IACObject parentPos)
         {
-            OpenPort();
-            if (!IsEnabledClosePort())
-                return new Msg(eMsgLevel.Error, "Connection to scale is disabled");
             PAScaleMode lastScaleMode = CurrentScaleMode;
             try
             {
                 if (!ApplicationManager.IsSimulationOn)
                 {
+                    OpenPort();
+                    if (!IsEnabledClosePort())
+                        return new Msg(eMsgLevel.Error, "Connection to scale is disabled");
+
                     if (lastScaleMode == PAScaleMode.ReadingWeights
                         || lastScaleMode == PAScaleMode.ReadingWeightsRequested)
                     {
@@ -586,7 +587,8 @@ namespace soehnle.mes.processapplication
                 {
                     Random rnd = new Random();
                     AlibiNo.ValueT = "Alibi" + rnd.Next();
-                    AlibiWeight.ValueT = rnd.NextDouble();
+                    if (Math.Abs(AlibiWeight.ValueT) <= Double.Epsilon)
+                        AlibiWeight.ValueT = rnd.NextDouble();
                 }
                 return null;
             }
