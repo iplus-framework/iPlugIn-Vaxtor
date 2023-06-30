@@ -10,7 +10,7 @@ using System.Net;
 
 namespace bosche.mes.processapplication
 {
-    [ACClassInfo("PAEScaleBoscheMCI", "en{Bosche Scale MCI}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required)]
+    [ACClassInfo(Const.PackName_VarioAutomation, "en{'Bosche Scale MCI'}de{'Bosche Waage MCI'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required)]
     public class PAEScaleBoscheMCI : PAEScaleCalibratable
     {
         public PAEScaleBoscheMCI(ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "") : base(acType, content, parentACObject, parameter, acIdentifier)
