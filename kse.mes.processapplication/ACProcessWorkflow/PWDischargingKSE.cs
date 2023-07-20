@@ -402,7 +402,7 @@ namespace kse.mes.processapplication
                                             if (prodOrderManager != null)
                                             {
                                                 double calculatedBatchWeight = 0;
-                                                if (prodOrderManager.CalcProducedBatchWeight(dbApp, currentBatchPos, out calculatedBatchWeight) == null)
+                                                if (prodOrderManager.CalcProducedBatchWeight(dbApp, currentBatchPos, null, out calculatedBatchWeight) == null)
                                                 {
                                                     double diff = calculatedBatchWeight - currentBatchPos.ActualQuantityUOM;
                                                     if (diff > 0.00001)
