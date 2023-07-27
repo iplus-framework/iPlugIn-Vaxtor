@@ -909,28 +909,28 @@ namespace soehnle.mes.processapplication
             result = null;
             switch (acMethodName)
             {
-                case "OpenPort":
+                case nameof(OpenPort):
                     OpenPort();
                     return true;
-                case "IsEnabledOpenPort":
+                case nameof(IsEnabledOpenPort):
                     result = IsEnabledOpenPort();
                     return true;
-                case "ClosePort":
+                case nameof(ClosePort):
                     ClosePort();
                     return true;
-                case "IsEnabledClosePort":
+                case nameof(IsEnabledClosePort):
                     result = IsEnabledClosePort();
                     return true;
-                case "StartReadWeightData":
+                case nameof(StartReadWeightData):
                     StartReadWeightData();
                     return true;
-                case "IsEnabledStartReadWeightData":
+                case nameof(IsEnabledStartReadWeightData):
                     result = IsEnabledStartReadWeightData();
                     return true;
-                case "StopReadWeightData":
+                case nameof(StopReadWeightData):
                     StopReadWeightData();
                     return true;
-                case "IsEnabledStopReadWeightData":
+                case nameof(IsEnabledStopReadWeightData):
                     result = IsEnabledStopReadWeightData();
                     return true;
             }
