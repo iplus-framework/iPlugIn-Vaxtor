@@ -1572,7 +1572,7 @@ namespace kse.mes.processapplication
 
 
         #region Sending
-        public override MsgWithDetails SendACMethod(PAProcessFunction sender, ACMethod acMethod)
+        public override MsgWithDetails SendACMethod(PAProcessFunction sender, ACMethod acMethod, gip.core.datamodel.ACMethod previousParams = null)
         {
             if (!IsReadyForSending)
                 return new MsgWithDetails("Keine TCP-Verbindung zu KSE", this, eMsgLevel.Error, ClassName, "SendACMethod", 1000);

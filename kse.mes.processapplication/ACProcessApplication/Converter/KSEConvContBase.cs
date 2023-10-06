@@ -353,7 +353,7 @@ namespace kse.mes.processapplication
             //throw new NotImplementedException();
         }
 
-        public override gip.core.datamodel.MsgWithDetails SendACMethod(PAProcessFunction sender, gip.core.datamodel.ACMethod acMethod)
+        public override gip.core.datamodel.MsgWithDetails SendACMethod(PAProcessFunction sender, gip.core.datamodel.ACMethod acMethod, gip.core.datamodel.ACMethod previousParams = null)
         {
             if (Session == null)
             {
