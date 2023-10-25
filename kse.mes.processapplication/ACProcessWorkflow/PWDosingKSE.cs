@@ -494,24 +494,24 @@ namespace kse.mes.processapplication
                     sortList.Add(new SiloSortElem() { Relation = relation, DistanceX = -1, DistanceY = -1 });
                     continue;
                 }
-                IList<Facility> possibleSilos;
+                ACPartslistManager.QrySilosResult possibleSilos;
                 RouteQueryParams queryParams = new RouteQueryParams(RouteQueryPurpose.StartDosing, ACPartslistManager.SearchMode.SilosWithOutwardEnabled, null, null, ExcludedSilos);
                 IEnumerable<Route> routes = GetRoutes(relation, dbApp, dbIPlus, queryParams, null, out possibleSilos);
-                if (routes != null && routes.Any())
+                if (routes != null && routes.Any() && possibleSilos != null && possibleSilos.FilteredResult != null)
                 {
-                    var silo = possibleSilos.FirstOrDefault();
-                    if (possibleSilos.Count > 1)
+                    var silo = possibleSilos.FilteredResult.FirstOrDefault();
+                    if (possibleSilos.FilteredResult.Count > 1)
                     {
                         Route firstRoute = routes.FirstOrDefault();
                         RouteItem sourceItem = firstRoute.FirstOrDefault();
                         if (sourceItem != null)
                         {
-                            silo = possibleSilos.Where(c => c.VBiFacilityACClassID.HasValue && c.VBiFacilityACClassID.Value == sourceItem.Source.ACClassID).FirstOrDefault();
+                            silo = possibleSilos.FilteredResult.Where(c => c.StorageBin.VBiFacilityACClassID.HasValue && c.StorageBin.VBiFacilityACClassID.Value == sourceItem.Source.ACClassID).FirstOrDefault();
                             if (silo == null)
-                                silo = possibleSilos.FirstOrDefault();
+                                silo = possibleSilos.FilteredResult.FirstOrDefault();
                         }
                     }
-                    sortList.Add(new SiloSortElem() { Relation = relation, DistanceX = Convert.ToInt32(silo.DistanceFront), DistanceY = Convert.ToInt32(silo.DistanceBehind) });
+                    sortList.Add(new SiloSortElem() { Relation = relation, DistanceX = Convert.ToInt32(silo.StorageBin.DistanceFront), DistanceY = Convert.ToInt32(silo.StorageBin.DistanceBehind) });
                 }
                 else
                     sortList.Add(new SiloSortElem() { Relation = relation, DistanceX = 0, DistanceY = 0 });
