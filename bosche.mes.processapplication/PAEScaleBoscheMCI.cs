@@ -12,7 +12,7 @@ using System.IO.Ports;
 namespace bosche.mes.processapplication
 {
     [ACClassInfo(Const.PackName_VarioAutomation, "en{'Bosche Scale MCI'}de{'Bosche Waage MCI'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required)]
-    public class PAEScaleBoscheMCI : PAEScaleCalibratable
+    public class PAEScaleBoscheMCI : PAEScaleCalibratableMES
     {
         public PAEScaleBoscheMCI(ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "") : base(acType, content, parentACObject, parameter, acIdentifier)
         {
@@ -720,7 +720,7 @@ namespace bosche.mes.processapplication
                         _CountInvalidWeights = 0;
                         if (telegram.InvalidTelegram)
                         {
-                            Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                            Msg msg = new Msg(this, eMsgLevel.Error, nameof(PAEScaleBoscheMCI), "OnParseReadWeightResult(10)", 504, "Error50306");
                             if (IsAlarmActive(StateScale, msg.Message) == null || IgnoreInvalidTeleLength)
                             {
                                 Messages.LogMessageMsg(msg);

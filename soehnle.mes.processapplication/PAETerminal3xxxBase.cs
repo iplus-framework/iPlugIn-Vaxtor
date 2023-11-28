@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace soehnle.mes.processapplication
 {
     [ACClassInfo(Const.PackName_VarioAutomation, "en{'Scale Terminal 30xx'}de{'Waage Terminal 30xx'}", Global.ACKinds.TPAModule, Global.ACStorableTypes.Required, false, true)]
-    public abstract class PAETerminal3xxxBase : PAEScaleCalibratable, IACPAESerialPort
+    public abstract class PAETerminal3xxxBase : PAEScaleCalibratableMES, IACPAESerialPort
     {
         #region c'tors
         static PAETerminal3xxxBase()
@@ -60,7 +60,6 @@ namespace soehnle.mes.processapplication
             return base.ACDeInit(deleteACClassTask);
         }
 
-        public new const string ClassName = "PAETerminal3xxxBase";
         #endregion
 
 
@@ -545,7 +544,7 @@ namespace soehnle.mes.processapplication
         }
 
 
-        public override Msg OnRegisterAlibiWeight(IACObject parentPos)
+        public override Msg OnRegisterAlibiWeight()
         {
             PAScaleMode lastScaleMode = CurrentScaleMode;
             try
@@ -594,7 +593,7 @@ namespace soehnle.mes.processapplication
             }
             catch (Exception e)
             {
-                Msg msg = new Msg("Terminal 30xx Alibi Error: " + e.Message, this, eMsgLevel.Exception, ClassName, "OnRegisterAlibiWeigh", 596);
+                Msg msg = new Msg("Terminal 30xx Alibi Error: " + e.Message, this, eMsgLevel.Exception, nameof(PAETerminal3xxxBase), "OnRegisterAlibiWeigh", 596);
                 Messages.LogMessageMsg(msg);
                 return msg;
             }
@@ -798,7 +797,7 @@ namespace soehnle.mes.processapplication
                         _CountInvalidWeights = 0;
                         if (tele3XxxEDV.InvalidTelegram)
                         {
-                            Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseReadWeightResult(10)", 504, "Error50306");
+                            Msg msg = new Msg(this, eMsgLevel.Error, nameof(PAETerminal3xxxBase), "OnParseReadWeightResult(10)", 504, "Error50306");
                             if (IsAlarmActive(StateScale, msg.Message) == null || IgnoreInvalidTeleLength)
                             {
                                 Messages.LogMessageMsg(msg);
@@ -856,7 +855,7 @@ namespace soehnle.mes.processapplication
                 if (tele3XxxEDV.InvalidWeight)
                 {
                     StateScale.ValueT = PANotifyState.AlarmOrFault;
-                    Msg msg = new Msg(this, eMsgLevel.Error, ClassName, "OnParseAlibiResult(10)", 504, "Error50306");
+                    Msg msg = new Msg(this, eMsgLevel.Error, nameof(PAETerminal3xxxBase), "OnParseAlibiResult(10)", 504, "Error50306");
                     if (IsAlarmActive(StateScale, msg.Message) == null)
                     {
                         Messages.LogMessageMsg(msg);

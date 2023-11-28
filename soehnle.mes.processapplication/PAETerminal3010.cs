@@ -39,8 +39,6 @@ namespace soehnle.mes.processapplication
             return base.ACDeInit(deleteACClassTask);
         }
 
-        public new const string ClassName = "PAETerminal3010";
-
         #endregion
 
         #region Override
@@ -53,6 +51,16 @@ namespace soehnle.mes.processapplication
                     _Communicator = new Comm3010();
                 return _Communicator;
             }
+        }
+
+        public override bool IsEnabledOnRegisterAlibiWeight()
+        {
+            return true;
+        }
+
+        public override bool IsEnabledRegisterAlibiWeight()
+        {
+            return true;
         }
         #endregion
 
