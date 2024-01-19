@@ -28,7 +28,9 @@ namespace gip.mes.processapplication
         static PWContDisKSE()
         {
             RegisterExecuteHandler(typeof(PWContDisKSE), HandleExecuteACMethod_PWContDisKSE);
+            ACMethod.InheritFromBase(typeof(PWContDisKSE), ACStateConst.SMStarting);
         }
+
 
         public PWContDisKSE(core.datamodel.ACClass acType, IACObject content, IACObject parentACObject, ACValueList parameter, string acIdentifier = "")
             : base(acType, content, parentACObject, parameter, acIdentifier)
