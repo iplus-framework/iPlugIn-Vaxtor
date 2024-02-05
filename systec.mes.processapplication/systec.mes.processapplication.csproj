@@ -46,6 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
     </Reference>
+    <Reference Include="gip.mes.processapplication">
+      <HintPath>..\..\iPlusMES\bin\Debug\gip.mes.processapplication.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />

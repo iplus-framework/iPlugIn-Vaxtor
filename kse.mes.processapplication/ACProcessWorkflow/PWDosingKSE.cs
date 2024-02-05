@@ -322,7 +322,8 @@ namespace kse.mes.processapplication
                         PADosingLastBatchEnum lastBatchMode = PADosingLastBatchEnum.None;
                         acMethod[PWMethodVBBase.IsLastBatchParamName] = (short)lastBatchMode;
 
-                        acMethod["Route"] = dosingRoute != null ? dosingRoute.Clone() as Route : null;
+                        if (ValidateAndSetRouteForParam(acMethod, dosingRoute))
+                            return StartNextCompResult.CycleWait;
                         acMethod["Source"] = intermediateSilo.RouteItemIDAsNum;
                         acMethod["TargetQuantity"] = Math.Abs(dosingQuantity);
                         //if (relation.SourceProdOrderPartslistPos.Material.Density > 0.00001)
