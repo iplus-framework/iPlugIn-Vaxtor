@@ -422,7 +422,7 @@ namespace systec.mes.processapplication
                 if (!IsConnected.ValueT)
                 {
                     OpenPort();
-                    if (!TcpClient.Connected)
+                    if (TcpClient == null || !TcpClient.Connected)
                     {
                         ReportError("Can not open TCP/IP-Port!");
                         return null;
@@ -512,7 +512,7 @@ namespace systec.mes.processapplication
                 if (!IsConnected.ValueT)
                 {
                     OpenPort();
-                    if (!TcpClient.Connected)
+                    if (TcpClient == null || !TcpClient.Connected)
                     {
                         ReportError("Can not open TCP/IP-Port!");
                         return;
@@ -660,7 +660,7 @@ namespace systec.mes.processapplication
                 if (!IsConnected.ValueT)
                 {
                     OpenPort();
-                    if (!TcpClient.Connected)
+                    if (TcpClient == null || !TcpClient.Connected)
                         return ReportError("Can not open TCP/IP-Port!");
                 }
 
