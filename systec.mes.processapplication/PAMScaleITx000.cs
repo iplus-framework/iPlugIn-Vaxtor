@@ -210,6 +210,8 @@ namespace systec.mes.processapplication
             }
         }
 
+        protected bool _SyncDigitalOutputs = false;
+
         private DateTime _LastWrite = DateTime.Now;
 
         [ACPropertyBindingSource(408, "", "en{'Last weight'}de{'Letztes Gewicht'}")]
@@ -254,8 +256,13 @@ namespace systec.mes.processapplication
                     pollInterval = PollingInterval;
                     _PollThread.StartReportingExeTime();
 
-                    if (CurrentScaleMode == PAScaleMode.ReadingWeights)
+                    if (CurrentScaleMode == PAScaleMode.ReadingWeights && IsEnabledStartReadWeightData())
                         PollWeightData();
+                    if (_SyncDigitalOutputs && IsEnabledSetDigitalOutputs())
+                    {
+                        SetDigitalOutputs();
+                        _SyncDigitalOutputs = false;
+                    }
 
                     _PollThread.StopReportingExeTime();
                 }
@@ -633,7 +640,7 @@ namespace systec.mes.processapplication
 
         public override bool IsEnabledOnRegisterAlibiWeight()
         {
-            return TCPCommEnabled;
+            return TCPCommEnabled || IsSimulationOn;
         }
 
         //public override Msg SaveAlibiWeighing(PAOrderInfoEntry entity = null)
@@ -886,7 +893,7 @@ namespace systec.mes.processapplication
             if (   (e.ValueEvent.Sender == EventRaiser.Source) && (e.ValueEvent.EventType == EventTypes.ValueChangedInSource)
                 && (e.ValueEvent.InvokerInfo != null || this.Root.Initialized))
             {
-                if (sender == null) { }
+                _SyncDigitalOutputs = true; 
             }
         }
         #endregion
