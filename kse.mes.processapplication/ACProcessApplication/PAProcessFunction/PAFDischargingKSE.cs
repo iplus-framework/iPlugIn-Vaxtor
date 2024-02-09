@@ -43,7 +43,7 @@ namespace kse.mes.processapplication
 
         #region PAFDischarging implementation
 
-        protected override MsgWithDetails CompleteACMethodOnSMStarting(ACMethod acMethod)
+        protected override MsgWithDetails CompleteACMethodOnSMStarting(ACMethod acMethod, ACMethod previousParams)
         {
             var acValue = acMethod.ParameterValueList.GetACValue("PositioningDestination");
             if (acValue != null && acValue.ParamAsUInt16 > 0)

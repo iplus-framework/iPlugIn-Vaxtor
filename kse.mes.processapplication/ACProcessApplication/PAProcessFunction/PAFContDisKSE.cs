@@ -48,7 +48,7 @@ namespace gip.mes.processapplication
         #endregion
 
         #region override abstract methods
-        protected override MsgWithDetails CompleteACMethodOnSMStarting(ACMethod acMethod)
+        protected override MsgWithDetails CompleteACMethodOnSMStarting(ACMethod acMethod, ACMethod previousParams)
         {
             return null;
         }
