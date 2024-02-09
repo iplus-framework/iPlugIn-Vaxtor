@@ -278,7 +278,7 @@ namespace kse.mes.processapplication
 
                         Route dosingRoute = null;
                         PWDischarging.DetermineDischargingRoute(dbIPlus, intermediateSilo, ParentPWGroup.AccessedProcessModule, out dosingRoute, 0, 
-                                            (c, p, r) => c.ACKind == Global.ACKinds.TPAProcessModule, PAProcessModule.SelRuleID_ProcessModule_Deselector, null);
+                                            (c, p, r) => c.ACKind == Global.ACKinds.TPAProcessModule, PAProcessModule.SelRuleID_ProcessModule_Deselector, true, true, null);
                         if (dosingRoute != null)
                             dosingRoute.Detach(true);
                         else

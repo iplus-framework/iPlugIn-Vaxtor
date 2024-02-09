@@ -48,7 +48,7 @@ namespace kse.mes.processapplication
             var acValue = acMethod.ParameterValueList.GetACValue("PositioningDestination");
             if (acValue != null && acValue.ParamAsUInt16 > 0)
                 return null;
-            return base.CompleteACMethodOnSMStarting(acMethod);
+            return base.CompleteACMethodOnSMStarting(acMethod, previousParams);
         }
 
         protected override void OnSetRouteItemData(ACMethod acMethod, RouteItem targetItem, RouteItem sourceItem, Route route)
