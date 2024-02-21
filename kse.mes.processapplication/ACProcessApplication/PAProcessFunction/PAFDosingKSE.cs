@@ -437,9 +437,9 @@ namespace kse.mes.processapplication
         }
 
 
-        protected override void OnSetRouteItemData(ACMethod acMethod, PAMSilo pamSilo, RouteItem sourceRouteItem)
+        protected override void OnSetRouteItemData(ACMethod acMethod, PAMSilo pamSilo, RouteItem sourceRouteItem, bool isConfigInitialization)
         {
-            base.OnSetRouteItemData(acMethod, pamSilo, sourceRouteItem);
+            base.OnSetRouteItemData(acMethod, pamSilo, sourceRouteItem, isConfigInitialization);
             if (pamSilo != null && pamSilo.LearnDosing != null && pamSilo.LearnDosing.ValueT)
             {
                 ACValue odrReset = acMethod.ParameterValueList.GetACValue("ODRReset");

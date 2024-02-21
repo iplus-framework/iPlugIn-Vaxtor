@@ -51,9 +51,9 @@ namespace kse.mes.processapplication
             return base.CompleteACMethodOnSMStarting(acMethod, previousParams);
         }
 
-        protected override void OnSetRouteItemData(ACMethod acMethod, RouteItem targetItem, RouteItem sourceItem, Route route)
+        protected override void OnSetRouteItemData(ACMethod acMethod, RouteItem targetItem, RouteItem sourceItem, Route route, bool isConfigInitialization)
         {
-            base.OnSetRouteItemData(acMethod, targetItem, sourceItem, route);
+            base.OnSetRouteItemData(acMethod, targetItem, sourceItem, route, isConfigInitialization);
             if (targetItem != null)
             {
                 PAProcessModule acCompTarget = targetItem.TargetACComponent as PAProcessModule;
