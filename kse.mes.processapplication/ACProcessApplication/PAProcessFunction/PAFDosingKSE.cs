@@ -258,7 +258,15 @@ namespace kse.mes.processapplication
             gip.core.datamodel.ACClass parentACClass = ParentACComponent.ACType as gip.core.datamodel.ACClass;
             try
             {
-                var routes = ACRoutingService.DbSelectRoutesFromPoint(dbIPlus, thisACClass, this.PAPointMatIn1.PropertyInfo, (c, p, r) => c.ACKind == Global.ACKinds.TPAProcessModule && c.ACClassID != parentACClass.ACClassID, null, RouteDirections.Backwards, true, false);
+                ACRoutingParameters routingParameters = new ACRoutingParameters()
+                {
+                    Database = dbIPlus,
+                    DBSelector = (c, p, r) => c.ACKind == Global.ACKinds.TPAProcessModule && c.ACClassID != parentACClass.ACClassID,
+                    Direction = RouteDirections.Backwards,
+                    DBIncludeInternalConnections = true
+                };
+
+                var routes = ACRoutingService.DbSelectRoutesFromPoint(thisACClass, this.PAPointMatIn1.PropertyInfo, routingParameters);
                 if (routes != null && routes.Any())
                 {
                     foreach (Route route in routes)
