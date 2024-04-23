@@ -536,7 +536,7 @@ namespace systec.mes.processapplication
                         bool lastBit = lastout1.GetBitValue(i);
                         if (newBit != lastBit)
                         {
-                            string command = newBit ? String.Format("OS{0:00}", (i + 1)) : String.Format("OC{0:00}", (i + 1));
+                            string command = newBit ? String.Format("<OS{0:00}>", (i + 1)) : String.Format("<OC{0:00}>", (i + 1));
                             Byte[] data = Encoding.ASCII.GetBytes(command);
                             ns.Write(data, 0, data.Length);
 
@@ -566,6 +566,7 @@ namespace systec.mes.processapplication
                             }
                         }
                     }
+                    LastOutputs1.ValueT = (BitAccessForInt32)outputs1.Clone();
 
                     BitAccessForInt32 outputs2 = Outputs2.ValueT;
                     BitAccessForInt32 lastout2 = LastOutputs2.ValueT;
@@ -575,7 +576,7 @@ namespace systec.mes.processapplication
                         bool lastBit = lastout2.GetBitValue(i);
                         if (newBit != lastBit)
                         {
-                            string command = newBit ? String.Format("OS{0:00}", (i + 1)) : String.Format("OC{0:00}", (i + 1));
+                            string command = newBit ? String.Format("<OS{0:00}>", (i + 1)) : String.Format("<OC{0:00}>", (i + 1));
                             Byte[] data = Encoding.ASCII.GetBytes(command);
                             ns.Write(data, 0, data.Length);
 
@@ -605,6 +606,7 @@ namespace systec.mes.processapplication
                             }
                         }
                     }
+                    LastOutputs2.ValueT = (BitAccessForInt32)outputs2.Clone();
                 }
             }
             catch (Exception e)
@@ -765,6 +767,15 @@ namespace systec.mes.processapplication
                         if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
                             return ReportError("Wrong answer from waage!");
 
+                        if (readResult[0] == '<') 
+                            readResult = readResult.Substring(1);
+                        int iEnd = readResult.LastIndexOf('>'); 
+                        if (iEnd > 0)
+                            readResult = readResult.Substring(0, iEnd);
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
+                            return ReportError("Wrong answer from waage!");
+
                         string[] resArr = readResult.Split(';');
                         if (resArr == null || resArr.Length < 10)
                             return ReportError("To less values in result!");
@@ -781,10 +792,16 @@ namespace systec.mes.processapplication
  
                         int eichNr = -1;
                         string eichNrError = null;
+                        string strEichNr = "";
                         if (ohneStillstand)
                         {
                             if (!int.TryParse(resArr[4], out eichNr))
+                            {
+                                strEichNr = string.Format("{0} {1}", resArr[2], resArr[3]);
                                 eichNrError = "Can not read Alibi-Nummer";
+                            }
+                            else
+                                strEichNr = string.Format("{0} {1} {2}", resArr[2], resArr[3], eichNr);
                         }
 
                         string result = resArr[6];
@@ -796,7 +813,7 @@ namespace systec.mes.processapplication
                         else if (resArr[9] == "g ")
                             weight *= 0.001;
 
-                        ITx000Result itResult = new ITx000Result(weight, eichNr.ToString(), eichNrError);
+                        ITx000Result itResult = new ITx000Result(weight, strEichNr, eichNrError);
                         LastWeight.ValueT = Math.Abs(weight).ToString();
                         ActualValue.ValueT = weight;
                         itResult.Date = resArr[2];
