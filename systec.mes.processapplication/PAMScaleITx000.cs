@@ -628,6 +628,18 @@ namespace systec.mes.processapplication
         #endregion
 
         #region overrides
+        public override Msg RegisterAlibiWeight()
+        {
+            // Delegate to other Thread because of Socket-Blocking
+            if (!IsSimulationOn && TCPCommEnabled)
+            {
+                ApplicationManager.ApplicationQueue.Add(() => { base.RegisterAlibiWeight(); });
+                return null;
+            }
+            else
+                return base.RegisterAlibiWeight();
+        }
+
         public override Msg OnRegisterAlibiWeight()
         {
             if (!IsEnabledOnRegisterAlibiWeight())
@@ -643,6 +655,26 @@ namespace systec.mes.processapplication
         public override bool IsEnabledOnRegisterAlibiWeight()
         {
             return TCPCommEnabled || IsSimulationOn;
+        }
+
+        public override void SetZero()
+        {
+            if (!IsSimulationOn && TCPCommEnabled)
+            {
+                ApplicationManager.ApplicationQueue.Add(() => { SetZeroITInternal(); });
+                return;
+            }
+            base.SetZero();
+        }
+
+        public override void Tare()
+        {
+            if (!IsSimulationOn && TCPCommEnabled)
+            {
+                ApplicationManager.ApplicationQueue.Add(() => { TareITInternal(); });
+                return;
+            }
+            base.Tare();
         }
 
         //public override Msg SaveAlibiWeighing(PAOrderInfoEntry entity = null)
@@ -913,6 +945,260 @@ namespace systec.mes.processapplication
                 _SyncDigitalOutputs = true; 
             }
         }
+
+
+        private ITx000Result SetZeroITInternal()
+        {
+            double weight = -99999;
+            string wrongUniqID = "-1";
+
+            try
+            {
+                if (!IsConnected.ValueT)
+                {
+                    OpenPort();
+                    if (TcpClient == null || !TcpClient.Connected)
+                        return ReportError("Can not open TCP/IP-Port!");
+                }
+
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream ns = TcpClient.GetStream();
+                    if (ns == null || !ns.CanWrite)
+                    {
+                        ClosePort();
+                        return ReportError("Can not write to stream!");
+                    }
+
+                    if ((DateTime.Now - _LastWrite).TotalSeconds < 1)
+                        Thread.Sleep(1000);
+
+                    if (SystecRevision == 0)
+                    {
+                        string command = "<SZ01>";
+
+                        Byte[] data = Encoding.ASCII.GetBytes(command);
+                        ns.Write(data, 0, data.Length);
+                        _LastWrite = DateTime.Now;
+
+                        int maxTries = DetermineMaxTriesToReceiveTimeout();
+
+                        for (int i = 0; i < maxTries; i++)
+                        {
+                            Thread.Sleep(100);
+                            if (ns.DataAvailable)
+                                break;
+                        }
+
+                        byte[] myReadBuffer = new byte[1024];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
+                        do
+                        {
+                            numberOfBytesRead = ns.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            if (numberOfBytesRead > 0)
+                                myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                        }
+                        while (ns.DataAvailable);
+
+                        string readResult = myCompleteMessage.ToString();
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 66)
+                            return ReportError("Wrong answer from waage!");
+
+                        int status = 0;
+                        if (!int.TryParse(readResult.Substring(1, 2), out status))
+                            return ReportError("Can't read waage status!");
+
+                        var error = ExtractErrors(status);
+                        if (error != null)
+                            return ReportError(error);
+                        return new ITx000Result(-99999, "-1", null);
+                    }
+                    else if (SystecRevision >= 19)
+                    {
+                        string command = "<SZ;1>"; // Scale 1
+
+                        Byte[] data = Encoding.ASCII.GetBytes(command);
+                        ns.Write(data, 0, data.Length);
+                        _LastWrite = DateTime.Now;
+
+                        byte[] myReadBuffer = new byte[1024];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
+                        do
+                        {
+                            numberOfBytesRead = ns.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            if (numberOfBytesRead > 0)
+                                myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                        }
+                        while (ns.DataAvailable);
+
+                        string readResult = myCompleteMessage.ToString();
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
+                            return ReportError("Wrong answer from waage!");
+
+                        if (readResult[0] == '<')
+                            readResult = readResult.Substring(1);
+                        int iEnd = readResult.LastIndexOf('>');
+                        if (iEnd > 0)
+                            readResult = readResult.Substring(0, iEnd);
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
+                            return ReportError("Wrong answer from waage!");
+
+                        string[] resArr = readResult.Split(';');
+                        if (resArr == null || resArr.Length < 10)
+                            return ReportError("To less values in result!");
+
+                        int status = 0;
+                        if (!int.TryParse(resArr[0], out status))
+                            return ReportError("Can't read waage status!");
+                        var error = ExtractErrors(status);
+                        if (error != null)
+                            return ReportError(error);
+                        return new ITx000Result(-99999, "-1", null);
+                    }
+                    return new ITx000Result(weight, wrongUniqID, "Wrong answer from waage!");
+                }
+            }
+            catch (Exception e)
+            {
+                return new ITx000Result(weight, wrongUniqID, e.Message);
+            }
+            finally
+            {
+                ClosePort();
+            }
+        }
+
+        private ITx000Result TareITInternal()
+        {
+            double weight = -99999;
+            string wrongUniqID = "-1";
+
+            try
+            {
+                if (!IsConnected.ValueT)
+                {
+                    OpenPort();
+                    if (TcpClient == null || !TcpClient.Connected)
+                        return ReportError("Can not open TCP/IP-Port!");
+                }
+
+                using (ACMonitor.Lock(_61000_LockPort))
+                {
+                    NetworkStream ns = TcpClient.GetStream();
+                    if (ns == null || !ns.CanWrite)
+                    {
+                        ClosePort();
+                        return ReportError("Can not write to stream!");
+                    }
+
+                    if ((DateTime.Now - _LastWrite).TotalSeconds < 1)
+                        Thread.Sleep(1000);
+
+                    if (SystecRevision == 0)
+                    {
+                        string command = "<TA01>";
+
+                        Byte[] data = Encoding.ASCII.GetBytes(command);
+                        ns.Write(data, 0, data.Length);
+                        _LastWrite = DateTime.Now;
+
+                        int maxTries = DetermineMaxTriesToReceiveTimeout();
+
+                        for (int i = 0; i < maxTries; i++)
+                        {
+                            Thread.Sleep(100);
+                            if (ns.DataAvailable)
+                                break;
+                        }
+
+                        byte[] myReadBuffer = new byte[1024];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
+                        do
+                        {
+                            numberOfBytesRead = ns.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            if (numberOfBytesRead > 0)
+                                myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                        }
+                        while (ns.DataAvailable);
+
+                        string readResult = myCompleteMessage.ToString();
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 66)
+                            return ReportError("Wrong answer from waage!");
+
+                        int status = 0;
+                        if (!int.TryParse(readResult.Substring(1, 2), out status))
+                            return ReportError("Can't read waage status!");
+
+                        var error = ExtractErrors(status);
+                        if (error != null)
+                            return ReportError(error);
+                        return new ITx000Result(-99999, "-1", null);
+                    }
+                    else if (SystecRevision >= 19)
+                    {
+                        string command = "<TA;1>"; // Scale 1
+
+                        Byte[] data = Encoding.ASCII.GetBytes(command);
+                        ns.Write(data, 0, data.Length);
+                        _LastWrite = DateTime.Now;
+
+                        byte[] myReadBuffer = new byte[1024];
+                        StringBuilder myCompleteMessage = new StringBuilder();
+                        int numberOfBytesRead = 0;
+                        do
+                        {
+                            numberOfBytesRead = ns.Read(myReadBuffer, 0, myReadBuffer.Length);
+                            if (numberOfBytesRead > 0)
+                                myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
+                        }
+                        while (ns.DataAvailable);
+
+                        string readResult = myCompleteMessage.ToString();
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
+                            return ReportError("Wrong answer from waage!");
+
+                        if (readResult[0] == '<')
+                            readResult = readResult.Substring(1);
+                        int iEnd = readResult.LastIndexOf('>');
+                        if (iEnd > 0)
+                            readResult = readResult.Substring(0, iEnd);
+
+                        if (string.IsNullOrEmpty(readResult) || readResult.Length < 63)
+                            return ReportError("Wrong answer from waage!");
+
+                        string[] resArr = readResult.Split(';');
+                        if (resArr == null || resArr.Length < 10)
+                            return ReportError("To less values in result!");
+
+                        int status = 0;
+                        if (!int.TryParse(resArr[0], out status))
+                            return ReportError("Can't read waage status!");
+                        var error = ExtractErrors(status);
+                        if (error != null)
+                            return ReportError(error);
+                        return new ITx000Result(-99999, "-1", null);
+                    }
+                    return new ITx000Result(weight, wrongUniqID, "Wrong answer from waage!");
+                }
+            }
+            catch (Exception e)
+            {
+                return new ITx000Result(weight, wrongUniqID, e.Message);
+            }
+            finally
+            {
+                ClosePort();
+            }
+        }
+
         #endregion
         #endregion
 
