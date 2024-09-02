@@ -37,7 +37,7 @@
       <HintPath>$(IPlusIncludeDir)\gip.core.autocomponent.dll</HintPath>
     </Reference>
     <Reference Include="gip.core.communication">
-      <HintPath>$(IPlusIncludeDir)\gip.core.communication.dll</HintPath>
+      <HintPath>..\..\iPlusMES\bin\Debug\gip.core.communication.dll</HintPath>
     </Reference>
     <Reference Include="gip.core.datamodel">
       <HintPath>$(IPlusIncludeDir)\gip.core.datamodel.dll</HintPath>
