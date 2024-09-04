@@ -134,6 +134,7 @@ namespace vaxtor.mes.processapplication
                 {
                     _PollThread.StartReportingExeTime();
 
+                    RetriveDBRecognitions();
 
                     _PollThread.StopReportingExeTime();
                 }
@@ -152,7 +153,22 @@ namespace vaxtor.mes.processapplication
         private void RetriveDBRecognitions()
         {
             string uri = GenerateURI();
-            
+
+            if (string.IsNullOrEmpty(uri))
+            {
+                //TODO: alarm
+                return;
+            }
+
+            ACRestClient client = Client;
+
+            if (client == null)
+            {
+                //TODO: alarm
+                return;
+            }
+
+            WSResponse<string> response = client.Get(uri);
 
         }
 
