@@ -32,8 +32,8 @@ namespace vaxtor.mes.processapplication
 
             _QueryParams = new Dictionary<string, string>
             {
-                { QueryParamPage, PageToRetrive.ToString() },
-                { QueryParamID, LastRetrivedID.ValueT }
+                { QueryParamPage, PageToRetrieve.ToString() },
+                { QueryParamID, LastRetrievedID.ValueT }
             };
 
             _ShutdownEvent = new ManualResetEvent(false);
@@ -84,8 +84,8 @@ namespace vaxtor.mes.processapplication
             }
         }
 
-        [ACPropertyBindingSource(9999, "Error", "en{'Last retrived container ID'}de{'Last retrived container ID'}", "", true, true)]
-        public IACContainerTNet<string> LastRetrivedID
+        [ACPropertyBindingSource(9999, "Error", "en{'Last retrieved container ID'}de{'Last retrieved container ID'}", "", true, true)]
+        public IACContainerTNet<string> LastRetrievedID
         {
             get;
             set;
@@ -98,8 +98,8 @@ namespace vaxtor.mes.processapplication
             set;
         }
 
-        [ACPropertyInfo(true, 9999, "Config", "en{'Page to retrive'}de{'Page to retrive'}", DefaultValue = 5)]
-        public int PageToRetrive
+        [ACPropertyInfo(true, 9999, "Config", "en{'Page to retrieve'}de{'Page to retrieve'}", DefaultValue = 5)]
+        public int PageToRetrieve
         {
             get;
             set;
@@ -134,7 +134,7 @@ namespace vaxtor.mes.processapplication
                 {
                     _PollThread.StartReportingExeTime();
 
-                    RetriveDBRecognitions();
+                    RetrieveDBRecognitions();
 
                     _PollThread.StopReportingExeTime();
                 }
@@ -150,7 +150,7 @@ namespace vaxtor.mes.processapplication
             }
         }
 
-        private void RetriveDBRecognitions()
+        private void RetrieveDBRecognitions()
         {
             string uri = GenerateURI();
 
@@ -169,7 +169,15 @@ namespace vaxtor.mes.processapplication
             }
 
             WSResponse<string> response = client.Get(uri);
+            ResultSet result = Deserialize(response.Data);
 
+            if (result != null && result.Containers != null && result.Containers.Any())
+            {
+                Container lastCont = result.Containers.OrderByDescending(c => c.ContainerID).FirstOrDefault();
+                LastRetrievedID.ValueT = lastCont.ContainerID;
+
+                ProcessRecognitions(result.Containers);
+            }
         }
 
         private string GenerateURI()
@@ -177,7 +185,7 @@ namespace vaxtor.mes.processapplication
             if (BaseUri == null)
                 return null;
 
-            _QueryParams[QueryParamID] = LastRetrivedID.ValueT;
+            _QueryParams[QueryParamID] = LastRetrievedID.ValueT;
 
             UriBuilder uriBuilder = new UriBuilder(BaseUri);
             uriBuilder.Query = new FormUrlEncodedContent(_QueryParams).ReadAsStringAsync().Result;
@@ -185,6 +193,16 @@ namespace vaxtor.mes.processapplication
             return uriBuilder.Uri.ToString();
         }
 
+        private ResultSet Deserialize(string content)
+        {
+            //TODO
+            return new ResultSet();
+        }
+
+        private void ProcessRecognitions(List<Container> containers)
+        {
+
+        }
         #endregion
     }
 }
