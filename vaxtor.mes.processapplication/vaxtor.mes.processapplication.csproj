@@ -42,6 +42,9 @@
     <Reference Include="gip.core.datamodel">
       <HintPath>$(IPlusIncludeDir)\gip.core.datamodel.dll</HintPath>
     </Reference>
+	<Reference Include="gip.core.processapplication">
+      <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

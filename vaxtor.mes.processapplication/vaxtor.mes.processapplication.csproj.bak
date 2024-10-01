@@ -37,10 +37,14 @@
       <HintPath>$(IPlusIncludeDir)\gip.core.autocomponent.dll</HintPath>
     </Reference>
     <Reference Include="gip.core.communication">
-      <HintPath>..\..\iPlusMES\bin\Debug\gip.core.communication.dll</HintPath>
+      <HintPath>$(IPlusIncludeDir)\gip.core.communication.dll</HintPath>
     </Reference>
     <Reference Include="gip.core.datamodel">
       <HintPath>$(IPlusIncludeDir)\gip.core.datamodel.dll</HintPath>
+    </Reference>
+	<Reference Include="gip.core.processapplication">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,8 +56,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Container.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Model\ResultSet.cs" />
     <Compile Include="VaxOCR.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

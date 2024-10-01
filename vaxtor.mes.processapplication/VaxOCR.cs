@@ -1,6 +1,7 @@
 ﻿using gip.core.autocomponent;
 using gip.core.communication;
 using gip.core.datamodel;
+using gip.core.processapplication;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 namespace vaxtor.mes.processapplication
 {
     [ACClassInfo(Const.PackName_VarioSystem, "en{'VaxOCR'}de{'VaxOCR'}", Global.ACKinds.TPABGModule, Global.ACStorableTypes.Required, false, false)]
-    public class VaxOCR : PAClassAlarmingBase
+    public class VaxOCR : PAECameraOCR
     {
         #region c'tors
 
@@ -193,16 +194,33 @@ namespace vaxtor.mes.processapplication
             return uriBuilder.Uri.ToString();
         }
 
-        private ResultSet Deserialize(string content)
+        protected virtual ResultSet Deserialize(string content)
         {
             //TODO
             return new ResultSet();
         }
 
-        private void ProcessRecognitions(List<Container> containers)
+        public virtual void ProcessRecognitions(List<Container> containers)
         {
-
+            PAEScannerDecoder scannerDecoder = FindChildComponents<PAEScannerDecoder>(c => c is PAEScannerDecoder).FirstOrDefault() as PAEScannerDecoder;
+            if (scannerDecoder != null)
+            {
+                Container container = containers.LastOrDefault();
+                if (container != null)
+                    scannerDecoder.OnScan(container.ContainerCode);
+            }
         }
+
+        [ACMethodInfo("","",9999)]
+        public void TestProcessRecognitions()
+        {
+            PAEScannerDecoder scannerDecoder = FindChildComponents<PAEScannerDecoder>(c => c is PAEScannerDecoder).FirstOrDefault() as PAEScannerDecoder;
+            if (scannerDecoder != null)
+            {
+                scannerDecoder.OnScan("test");
+            }
+        }
+
         #endregion
     }
 }
