@@ -118,7 +118,13 @@ namespace vaxtor.mes.processapplication
                 return _BaseUri;
             }
         }
-        
+
+        [ACPropertyInfo(9999)]
+        public string TestCode
+        {
+            get;
+            set;
+        }
 
         #endregion
 
@@ -211,13 +217,13 @@ namespace vaxtor.mes.processapplication
             }
         }
 
-        [ACMethodInfo("","",9999)]
+        [ACMethodInteraction("","",9999,true)]
         public void TestProcessRecognitions()
         {
             PAEScannerDecoder scannerDecoder = FindChildComponents<PAEScannerDecoder>(c => c is PAEScannerDecoder).FirstOrDefault() as PAEScannerDecoder;
             if (scannerDecoder != null)
             {
-                scannerDecoder.OnScan("test");
+                scannerDecoder.OnScan(TestCode);
             }
         }
 
