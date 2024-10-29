@@ -31,11 +31,11 @@ namespace vaxtor.mes.processapplication
         {
             bool result = base.ACPostInit();
 
-            _QueryParams = new Dictionary<string, string>
-            {
-                { QueryParamPage, PageToRetrieve.ToString() },
-                { QueryParamID, LastRetrievedID.ValueT }
-            };
+            //_QueryParams = new Dictionary<string, string>
+            //{
+            //    { QueryParamPage, PageToRetrieve.ToString() },
+            //    { QueryParamID, LastRetrievedID.ValueT }
+            //};
 
             _ShutdownEvent = new ManualResetEvent(false);
             _PollThread = new ACThread(Poll);
@@ -159,6 +159,8 @@ namespace vaxtor.mes.processapplication
 
         private void RetrieveDBRecognitions()
         {
+            return;
+
             string uri = GenerateURI();
 
             if (string.IsNullOrEmpty(uri))
