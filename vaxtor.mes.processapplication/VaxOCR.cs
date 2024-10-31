@@ -31,11 +31,11 @@ namespace vaxtor.mes.processapplication
         {
             bool result = base.ACPostInit();
 
-            //_QueryParams = new Dictionary<string, string>
-            //{
-            //    { QueryParamPage, PageToRetrieve.ToString() },
-            //    { QueryParamID, LastRetrievedID.ValueT }
-            //};
+            _QueryParams = new Dictionary<string, string>
+            {
+                { QueryParamPage, PageToRetrieve.ToString() },
+                { QueryParamID, LastRetrievedID != null ? LastRetrievedID.ValueT : null}
+            };
 
             _ShutdownEvent = new ManualResetEvent(false);
             _PollThread = new ACThread(Poll);
@@ -159,8 +159,6 @@ namespace vaxtor.mes.processapplication
 
         private void RetrieveDBRecognitions()
         {
-            return;
-
             string uri = GenerateURI();
 
             if (string.IsNullOrEmpty(uri))
@@ -180,7 +178,7 @@ namespace vaxtor.mes.processapplication
             WSResponse<string> response = client.Get(uri);
             ResultSet result = Deserialize(response.Data);
 
-            if (result != null && result.Containers != null && result.Containers.Any())
+            if (result != null && result.Containers != null && result.Containers.Any() && LastRetrievedID != null)
             {
                 Container lastCont = result.Containers.OrderByDescending(c => c.ContainerID).FirstOrDefault();
                 LastRetrievedID.ValueT = lastCont.ContainerID;
@@ -191,7 +189,7 @@ namespace vaxtor.mes.processapplication
 
         private string GenerateURI()
         {
-            if (BaseUri == null)
+            if (BaseUri == null || LastRetrievedID == null)
                 return null;
 
             _QueryParams[QueryParamID] = LastRetrievedID.ValueT;
