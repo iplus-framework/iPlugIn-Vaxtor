@@ -34,7 +34,7 @@ namespace vaxtor.mes.processapplication
             _QueryParams = new Dictionary<string, string>
             {
                 { QueryParamPage, PageToRetrieve.ToString() },
-                { QueryParamID, LastRetrievedID.ValueT }
+                { QueryParamID, LastRetrievedID != null ? LastRetrievedID.ValueT : null}
             };
 
             _ShutdownEvent = new ManualResetEvent(false);
@@ -178,7 +178,7 @@ namespace vaxtor.mes.processapplication
             WSResponse<string> response = client.Get(uri);
             ResultSet result = Deserialize(response.Data);
 
-            if (result != null && result.Containers != null && result.Containers.Any())
+            if (result != null && result.Containers != null && result.Containers.Any() && LastRetrievedID != null)
             {
                 Container lastCont = result.Containers.OrderByDescending(c => c.ContainerID).FirstOrDefault();
                 LastRetrievedID.ValueT = lastCont.ContainerID;
@@ -189,7 +189,7 @@ namespace vaxtor.mes.processapplication
 
         private string GenerateURI()
         {
-            if (BaseUri == null)
+            if (BaseUri == null || LastRetrievedID == null)
                 return null;
 
             _QueryParams[QueryParamID] = LastRetrievedID.ValueT;
