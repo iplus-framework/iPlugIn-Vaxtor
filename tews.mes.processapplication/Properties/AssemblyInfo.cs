@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿// gipSoft d.o.o. Copyright (c) for iplus-framework. This code is distributed under GPLv3.
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,8 +11,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("tews.mes.processapplication")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("GPLv3 iplus-framework")]
+[assembly: AssemblyTrademark("iplus-framework")]
 [assembly: AssemblyCulture("")]
 
 // Durch Festlegen von ComVisible auf FALSE werden die Typen in dieser Assembly
