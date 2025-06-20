@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <resolutions>
+        <resolution width="3840" height="2160" id="0" selected="1"/>
+        <resolution width="3072" height="1728" id="1"/>
+        <resolution width="2880" height="2160" id="2"/>
+        <resolution width="2688" height="1512" id="3"/>
+        <resolution width="2592" height="1944" id="4"/>
+        <resolution width="2592" height="1458" id="5"/>
+        <resolution width="2560" height="1440" id="6"/>
+        <resolution width="2304" height="1728" id="7"/>
+        <resolution width="2016" height="1512" id="8"/>
+        <resolution width="1920" height="1440" id="9"/>
+        <resolution width="1920" height="1080" id="10"/>
+        <resolution width="1440" height="1080" id="11"/>
+        <resolution width="1280" height="960" id="12"/>
+        <resolution width="1280" height="800" id="13"/>
+        <resolution width="1280" height="720" id="14"/>
+        <resolution width="1024" height="768" id="15"/>
+        <resolution width="1024" height="640" id="16"/>
+        <resolution width="1024" height="576" id="17"/>
+        <resolution width="800" height="600" id="18"/>
+        <resolution width="800" height="500" id="19"/>
+        <resolution width="800" height="450" id="20"/>
+        <resolution width="640" height="480" id="21"/>
+        <resolution width="640" height="400" id="22"/>
+        <resolution width="640" height="360" id="23"/>
+        <resolution width="480" height="360" id="24"/>
+        <resolution width="480" height="300" id="25"/>
+        <resolution width="480" height="270" id="26"/>
+        <resolution width="320" height="240" id="27"/>
+        <resolution width="320" height="200" id="28"/>
+        <resolution width="320" height="180" id="29"/>
+        <resolution width="160" height="120" id="30"/>
+        <resolution width="160" height="100" id="31"/>
+        <resolution width="160" height="90" id="32"/>
+    </resolutions>
+    <views>
+        <view id="1" description="VaxOCR" new="true" selected="1"/>
+        <view id="2" description="View area 2" new="true"/>
+        <view id="-1" description="No view" new="true"/>
+    </views>
+    <mode working_mode="0" is_virtual_port="true" virtual_port="0" signal_delay="0" generate_database="true" store_database_images="true" retry_notifications="false" retry_period="1" database_max_results="10000" jpeg_compression="80" check_whitelist="true" check_blacklist="true" check_grammar_exceptions="true" overview_url="" overview_user="" overview_pass="" watermark="false" watermark_template="$date$ $code$" watermark_position="0" watermark_font_size="1" max_jpeg_size="0" do_crop="false" log_to_sd="false" send_from_db="false" signaled_one_result="false" send_nones="true" http_timeout="5"/>
+    <ocr min_char_height="18" max_char_height="42" read_non_iso_codes="false" same_code_delay="60" algorithm_complexity="2" read_size_type_code="true" read_weights="false" code_orientation="3">
+        <rois>
+            <roi id="1" width="1340" height="714" type="2">
+                <points>
+                    <point x="790" y="330"/>
+                    <point x="780" y="521"/>
+                    <point x="1234" y="567"/>
+                    <point x="1237" y="316"/>
+                </points>
+            </roi>
+        </rois>
+    </ocr>
+    <reporting>
+        <vaxtor_protocol active="false" host="" port="9100" id="1" send_image="true" use_extended="true"/>
+        <overlay active="false" user="root" password="pass" message="$date$ - $containercode$" view="0" port="80"/>
+        <write_result sd="false" network_share="false" line_template="$timestamp$	$containercode$	$serialcode$	$sizetypecode$	$ownercode$	$ownercity$	$ownercountry$	$readconfidence$	$left$	$top$	$right$	$bottom$" image="true" plate_image="false" overview_image="false"/>
+        <vapix active="false" id="1"/>
+        <tcp active="false" host="" port="20000" message="$date$,$containercode$"/>
+        <tcp_server active="false" port="5000" message="$containercode$#"/>
+        <json active="false" url="" message="{
+&quot;code&quot;:&quot;$containercode$&quot;,
+&quot;date&quot;:&quot;$date$&quot;,
+&quot;confidence&quot;:$confidence$,
+&quot;left&quot;:$left$,
+&quot;top&quot;:$top$,
+&quot;right&quot;:$right$,
+&quot;bottom&quot;:$bottom$,
+&quot;charheight&quot;:$charheight$,
+&quot;processingtime&quot;:$processingtime$
+}" authorization="" send_no_image_notification="true"/>
+        <json2 active="false" url="" message="{
+&quot;code&quot;:&quot;$containercode$&quot;,
+&quot;date&quot;:&quot;$date$&quot;,
+&quot;confidence&quot;:$confidence$,
+&quot;left&quot;:$left$,
+&quot;top&quot;:$top$,
+&quot;right&quot;:$right$,
+&quot;bottom&quot;:$bottom$,
+&quot;charheight&quot;:$charheight$,
+&quot;processingtime&quot;:$processingtime$
+}" authorization="" send_no_image_notification="true"/>
+        <xml active="false" url="" message="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;AnalyticsEvent xmlns:i=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns=&quot;urn:milestone-systems&quot;&gt;
+&lt;EventHeader&gt;
+&lt;ID&gt;00000000-0000-0000-0000-000000000000&lt;/ID&gt;
+&lt;Timestamp&gt;$date$&lt;/Timestamp&gt;
+&lt;Type&gt;Container Recognition&lt;/Type&gt;
+&lt;Message&gt;VaxALPR On Camera Event&lt;/Message&gt;
+&lt;CustomTag&gt;$containercode$&lt;/CustomTag&gt;
+&lt;Source&gt;
+&lt;Name&gt;$ip$&lt;/Name&gt;
+&lt;/Source&gt;
+&lt;/EventHeader&gt;
+&lt;Description&gt;$containercode$&lt;/Description&gt;
+&lt;ObjectList&gt;
+&lt;Object&gt;
+&lt;Name&gt;Container Code&lt;/Name&gt;
+&lt;Confidence&gt;$confidence$&lt;/Confidence&gt;
+&lt;Value&gt;$containercode$&lt;/Value&gt;
+&lt;AlarmTrigger&gt;true&lt;/AlarmTrigger&gt;
+&lt;Size&gt;$charheight$&lt;/Size&gt;
+&lt;BoundingBox&gt;
+&lt;Top&gt;$absolutetop$&lt;/Top&gt;
+&lt;Left&gt;$absoluteleft$&lt;/Left&gt;
+&lt;Bottom&gt;$absolutebottom$&lt;/Bottom&gt;
+&lt;Right&gt;$absoluteright$&lt;/Right&gt;
+&lt;/BoundingBox&gt;
+&lt;/Object&gt;
+&lt;/ObjectList&gt;
+&lt;SnapshotList&gt;
+&lt;Snapshot&gt;
+&lt;TimeOffset&gt;0&lt;/TimeOffset&gt;
+&lt;Width&gt;$width$&lt;/Width&gt;
+&lt;Height&gt;$height$&lt;/Height&gt;
+&lt;SizeInBytes&gt;$jpegsize$&lt;/SizeInBytes&gt;
+&lt;Image&gt;$image$&lt;/Image&gt;
+&lt;/Snapshot&gt;
+&lt;/SnapshotList&gt;
+&lt;Vendor&gt;
+&lt;Name&gt;Vaxtor Technologies&lt;/Name&gt;
+&lt;/Vendor&gt;
+&lt;/AnalyticsEvent&gt;"/>
+        <ftp active="false" url="" filename="$safedate$_$containercode$.jpg" image="true" patch="false" overview="false"/>
+        <helix active="false" url="" apikey="" camera_id="0" reader_id="0" overview_id="0" sync_lists="false" sync_timer="10" send_heartbeat="true" send_heartbeat_timer="60"/>
+        <genetec active="false" url="" camera_logical_id="0" username="" password="" message="$containercode$" create_bookmark="false" raise_custom_event="true" is_test_environment="false" custom_event_id="0"/>
+        <optix active="false" url="" username="" password="" caption="$containercode$" description="$containercode$" source="" camera_id=""/>
+        <daily active="false" url="sftp://myserver/daily" format="$containercode$;$date$" prefix="CONTAINER" header="CODE;DATE"/>
+        <geneteccloud active="false" url="" username="" password="" reference_camera_id="1" camera_name="LPR" latitude="0" longitude="0"/>
+    </reporting>
+    <gps enabled="false" port="8500"/>
+</configuration>
