@@ -1,6 +1,7 @@
 ﻿using gip.core.datamodel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -76,7 +77,7 @@ namespace vaxtor.mes.processapplication
         {
             get
             {
-                if (!double.TryParse(Confidence, out double value))
+                if (!double.TryParse(Confidence, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
                     value = 0.0;
                 return value;
             }

@@ -159,7 +159,7 @@ namespace vaxtor.mes.processapplication
             set;
         }
 
-        protected const string C_NoContainerPresent = "NONE";
+        public const string C_NoContainerPresent = "NONE";
         [ACPropertyBindingSource(9999, "Error", "en{'Last retrieved container code'}de{'Last retrieved container code'}", "", true, true)]
         public IACContainerTNet<string> LastContainerCode
         {
@@ -167,6 +167,7 @@ namespace vaxtor.mes.processapplication
             set;
         }
 
+        private const string C_LowConfidenceMarker = "*";
         private double _MinConfidence;
         [ACPropertyInfo(true, 500, "en{'Polling [ms]'}de{'Abfragezyklus [ms]'}", DefaultValue = (double)99.0)]
         public double MinConfidence
@@ -385,9 +386,8 @@ namespace vaxtor.mes.processapplication
                         if (LastContainerCode != null)
                         {
                             if (lastCont.ConfidenceValue < MinConfidence)
-                                LastContainerCode.ValueT = "*" + lastCont.ContainerCode; // Mark as low confidence
-                            else
-                                LastContainerCode.ValueT = lastCont.ContainerCode;
+                                lastCont.ContainerCode = C_LowConfidenceMarker + lastCont.ContainerCode; // Mark as low confidence
+                            LastContainerCode.ValueT = lastCont.ContainerCode;
                         }
                     }
 
@@ -650,9 +650,8 @@ namespace vaxtor.mes.processapplication
                             LastRetrievedID.ValueT = lastCont.ID;
                         }
                         if (lastCont.ConfidenceValue < MinConfidence)
-                            LastContainerCode.ValueT = "*" + lastCont.ContainerCode; // Mark as low confidence
-                        else
-                            LastContainerCode.ValueT = lastCont.ContainerCode;
+                            lastCont.ContainerCode = C_LowConfidenceMarker + lastCont.ContainerCode; // Mark as low confidence
+                        LastContainerCode.ValueT = lastCont.ContainerCode;
                     }
 
                     if (changed)
@@ -1105,10 +1104,8 @@ namespace vaxtor.mes.processapplication
 
         public virtual void ProcessRecognitions(VaxOCRContainer lastContainer, List<VaxOCRContainer> containers)
         {
-            if (lastContainer == null || lastContainer.ConfidenceValue < MinConfidence)
-            {
+            if (lastContainer == null) // || lastContainer.ConfidenceValue < MinConfidence)
                 return;
-            }
             PAEScannerDecoder scannerDecoder = FindChildComponents<PAEScannerDecoder>(c => c is PAEScannerDecoder).FirstOrDefault() as PAEScannerDecoder;
             if (scannerDecoder != null)
             {
@@ -1139,6 +1136,74 @@ namespace vaxtor.mes.processapplication
                 scannerDecoder.OnScan(TestCode);
             }
         }
+
+        #region ISO 6346 validation
+        const string CharCode = "0123456789A?BCDEFGHIJK?LMNOPQRSTU?VWXYZ";
+
+        /// <summary>
+        /// Validate an ISO 6346 (BIC) container code. Based on example code from <a href="http://en.wikipedia.org/wiki/ISO_6346">http://en.wikipedia.org/wiki/ISO_6346</a>
+        /// </summary>
+        /// <param name="containerCode"></param>
+        /// <returns></returns>
+        public static bool IsContainerCode(string containerCode)
+        {
+            if (string.IsNullOrEmpty(containerCode))
+                return false;
+
+            // Trim and remove spaces
+            containerCode = containerCode.Trim().Replace(" ", string.Empty);
+
+            // Container code can not be an empty string or have a length other than 11
+            if (string.IsNullOrEmpty(containerCode) || containerCode.Length != 11)
+            {
+                return false;
+            }
+
+            int num = 0;
+
+            // Convert characters to uppercase
+            containerCode = containerCode.ToUpper();
+
+            for (var i = 0; i < 10; i++)
+            {
+                var chr = containerCode.Substring(i, 1);
+
+                // Ensure that the current character is in the valid alphabet
+                int idx = chr == "?" ? -1 : CharCode.IndexOf(chr, System.StringComparison.Ordinal);
+                if (idx < 0)
+                {
+                    return false;
+                }
+
+                // Calculate power and convert to int
+                idx = idx * (int)Math.Pow(2, i);
+                num += idx;
+            }
+            num = (num % 11) % 10;
+
+            // Return true if check digit equals num
+            return Int32.Parse(containerCode.Substring(10, 1)) == num;
+        }
+
+        public static bool IsUnreliableCode(string containerCode)
+        {
+            // Check if the code starts with '*', indicating low confidence
+            return !string.IsNullOrEmpty(containerCode) && containerCode.StartsWith(C_LowConfidenceMarker);
+        }
+
+        public static bool IsNoContainerPlaced(string containerCode)
+        {
+            return string.IsNullOrEmpty(containerCode) || string.Equals(containerCode, C_NoContainerPresent, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string RemoveUnreliableTagFromCode(string containerCode)
+        {
+            if (IsUnreliableCode(containerCode))
+                return containerCode.Substring(1); // Remove leading '*'
+            return containerCode;
+        }
+
+        #endregion
 
         protected override bool HandleExecuteACMethod(out object result, AsyncMethodInvocationMode invocationMode, string acMethodName, ACClassMethod acClassMethod, params object[] acParameter)
         {
