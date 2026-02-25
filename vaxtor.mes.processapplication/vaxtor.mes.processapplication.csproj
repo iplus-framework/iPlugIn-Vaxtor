@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <UseProjectReferences Condition="'$(UseProjectReferences)' == ''">true</UseProjectReferences>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,18 +34,37 @@
     <IPlusIncludeDir>..\..\iPlus\bin\Release</IPlusIncludeDir>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gip.core.autocomponent">
+   <Reference Include="gip.core.autocomponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.autocomponent.dll</HintPath>
     </Reference>
-    <Reference Include="gip.core.communication">
+    <ProjectReference Include="..\..\iPlus\gip.core.autocomponent\gip.core.autocomponent.csproj" Condition="'$(UseProjectReferences)' == 'true'">
+      <Project>{893D3B1B-DC55-4684-8B5D-941F1049151B}</Project>
+      <Name>gip.core.autocomponent</Name>
+    </ProjectReference>
+    <Reference Include="gip.core.communication" Condition="'$(UseProjectReferences)' != 'true'">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.communication.dll</HintPath>
     </Reference>
-    <Reference Include="gip.core.datamodel">
+    <ProjectReference Include="..\..\iPlus\gip.core.communication\gip.core.communication.csproj" Condition="'$(UseProjectReferences)' == 'true'">
+      <Project>{96014A57-E700-478F-850E-452E9BFCAA90}</Project>
+      <Name>gip.core.communication</Name>
+    </ProjectReference>
+    <Reference Include="gip.core.datamodel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.datamodel.dll</HintPath>
     </Reference>
-    <Reference Include="gip.core.processapplication">
+    <ProjectReference Include="..\..\iPlus\gip.core.datamodel\gip.core.datamodel.csproj" Condition="'$(UseProjectReferences)' == 'true'">
+      <Project>{16FB4111-5110-46E5-851D-38A4D7522F85}</Project>
+      <Name>gip.core.datamodel</Name>
+    </ProjectReference>
+    <Reference Include="gip.core.processapplication" Condition="'$(UseProjectReferences)' != 'true'">
       <HintPath>$(IPlusIncludeDir)\gip.core.processapplication.dll</HintPath>
     </Reference>
+    <ProjectReference Include="..\..\iPlus\gip.core.processapplication\gip.core.processapplication.csproj" Condition="'$(UseProjectReferences)' == 'true'">
+      <Project>{66484708-85BD-47C4-92DD-3010387465F4}</Project>
+      <Name>gip.core.processapplication</Name>
+    </ProjectReference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
