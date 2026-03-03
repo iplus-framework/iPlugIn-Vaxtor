@@ -4,16 +4,13 @@ using gip.core.datamodel;
 using gip.core.processapplication;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Serialization;
 
 namespace vaxtor.mes.processapplication
@@ -62,7 +59,7 @@ namespace vaxtor.mes.processapplication
             return result;
         }
 
-        public override bool ACDeInit(bool deleteACClassTask = false)
+        public override async Task<bool> ACDeInit(bool deleteACClassTask = false)
         {
             if (_ShutdownEvent != null)
             {
@@ -81,7 +78,7 @@ namespace vaxtor.mes.processapplication
                 _ShutdownEvent = null;
             }
 
-            return base.ACDeInit(deleteACClassTask);
+            return await base.ACDeInit(deleteACClassTask);
         }
 
         public const string QueryParamLimit = "limit";

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../iPlus"
+		}
+	],
+	"settings": {
+		"dotnet.server.useOmnisharp": true
+	}
+}
