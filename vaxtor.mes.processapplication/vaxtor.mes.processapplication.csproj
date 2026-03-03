@@ -35,7 +35,7 @@
     <IPlusIncludeDir>..\..\iPlus\bin\Release</IPlusIncludeDir>
   </PropertyGroup>
   <ItemGroup>
-   <Reference Include="gip.core.autocomponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL">
+   <Reference Include="gip.core.autocomponent, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL" Condition="'$(UseProjectReferences)' != 'true'">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.autocomponent.dll</HintPath>
     </Reference>
@@ -51,7 +51,7 @@
       <Project>{96014A57-E700-478F-850E-452E9BFCAA90}</Project>
       <Name>gip.core.communication</Name>
     </ProjectReference>
-    <Reference Include="gip.core.datamodel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL">
+    <Reference Include="gip.core.datamodel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=12adb6357a02d860, processorArchitecture=MSIL" Condition="'$(UseProjectReferences)' != 'true'">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(IPlusIncludeDir)\gip.core.datamodel.dll</HintPath>
     </Reference>
